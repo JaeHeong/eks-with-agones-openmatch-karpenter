@@ -88,6 +88,16 @@ module "eks_blueprints_addons" {
     kube-proxy = {
       most_recent = true
     }
+
+    karpenter = {
+      most_recent = true
+      configuration_values = jsonencode({
+        controller = {
+          clusterName     = var.cluster_name
+          clusterEndpoint = var.cluster_endpoint
+        }
+      })
+    }
   }
 
 
