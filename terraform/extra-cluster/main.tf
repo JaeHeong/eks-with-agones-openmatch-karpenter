@@ -251,7 +251,6 @@ resource "null_resource" "aga_mapping_cluster_1" {
   ]
 }
 
-
 ## Agones multi-cluster allocation
 resource "null_resource" "multicluster_allocation" {
 
