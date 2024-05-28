@@ -28,12 +28,12 @@ variable "gameservers_min_size" {
 
 variable "gameservers_max_size" {
   type    = number
-  default = 6
+  default = 1
 }
 
 variable "gameservers_desired_size" {
   type    = number
-  default = 3
+  default = 1
 }
 
 variable "agones_system_instance_types" {
@@ -48,7 +48,7 @@ variable "agones_system_min_size" {
 
 variable "agones_system_max_size" {
   type    = number
-  default = 3
+  default = 1
 }
 
 variable "agones_system_desired_size" {
@@ -68,7 +68,7 @@ variable "agones_metrics_min_size" {
 
 variable "agones_metrics_max_size" {
   type    = number
-  default = 3
+  default = 1
 }
 
 variable "agones_metrics_desired_size" {
@@ -88,12 +88,12 @@ variable "open_match_min_size" {
 
 variable "open_match_max_size" {
   type    = number
-  default = 6
+  default = 1
 }
 
 variable "open_match_desired_size" {
   type    = number
-  default = 3
+  default = 1
 }
 
 variable "agones_openmatch_instance_types" {
@@ -108,7 +108,7 @@ variable "agones_openmatch_min_size" {
 
 variable "agones_openmatch_max_size" {
   type    = number
-  default = 3
+  default = 1
 }
 
 variable "agones_openmatch_desired_size" {
