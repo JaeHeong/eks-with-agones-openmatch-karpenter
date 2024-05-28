@@ -39,17 +39,17 @@ module "eks" {
   subnet_ids = module.vpc.private_subnets
 
   eks_managed_node_groups = {
-    gameservers = {
-      instance_types = var.gameservers_instance_types
-      min_size       = var.gameservers_min_size
-      max_size       = var.gameservers_max_size
-      desired_size   = var.gameservers_desired_size
-      labels = {
-        "agones.dev/agones-gameserver" = true
-      }
-
-      subnet_ids = local.gameservers_subnet_ids
-    }
+#    gameservers = {
+#      instance_types = var.gameservers_instance_types
+#      min_size       = var.gameservers_min_size
+#      max_size       = var.gameservers_max_size
+#      desired_size   = var.gameservers_desired_size
+#      labels = {
+#        "agones.dev/agones-gameserver" = true
+#      }
+#
+#      subnet_ids = local.gameservers_subnet_ids
+#    }
 
     agones_system = {
       instance_types = var.agones_system_instance_types
