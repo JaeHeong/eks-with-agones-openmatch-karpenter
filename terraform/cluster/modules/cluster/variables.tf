@@ -14,7 +14,7 @@ variable "cluster_cidr" {
 
 variable "cluster_version" {
   type    = string
-  default = "1.28"
+  default = "1.29"
 }
 variable "gameservers_instance_types" {
   type    = list(any)
