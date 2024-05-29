@@ -14,6 +14,7 @@ module "cluster1" {
 #  cluster_cidr   = var.cluster_2_cidr
 #  open_match     = false
 #}
+
 #--------------------------------------------------------------
 # Adding guidance solution ID via AWS CloudFormation resource
 #--------------------------------------------------------------
