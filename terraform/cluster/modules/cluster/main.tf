@@ -13,10 +13,10 @@ locals {
   }
 
 }
+
 data "aws_eks_cluster_auth" "this" {
   name = module.eks.cluster_name
 }
-
 
 provider "aws" {
   region = var.cluster_region
@@ -39,18 +39,6 @@ module "eks" {
   subnet_ids = module.vpc.private_subnets
 
   eks_managed_node_groups = {
-#    gameservers = {
-#      instance_types = var.gameservers_instance_types
-#      min_size       = var.gameservers_min_size
-#      max_size       = var.gameservers_max_size
-#      desired_size   = var.gameservers_desired_size
-#      labels = {
-#        "agones.dev/agones-gameserver" = true
-#      }
-#
-#      subnet_ids = local.gameservers_subnet_ids
-#    }
-
     agones_system = {
       instance_types = var.agones_system_instance_types
       labels = {
@@ -69,6 +57,7 @@ module "eks" {
 
       subnet_ids = slice(module.vpc.private_subnets, 0, 3)
     }
+    
     agones_metrics = {
       instance_types = var.agones_metrics_instance_types
       labels = {
@@ -99,6 +88,7 @@ module "eks" {
 
       subnet_ids = slice(module.vpc.private_subnets, 0, 3)
     }
+    
     agones_openmatch = {
       instance_types = var.agones_openmatch_instance_types
       labels = {

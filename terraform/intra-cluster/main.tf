@@ -88,18 +88,13 @@ module "eks_blueprints_addons" {
     kube-proxy = {
       most_recent = true
     }
-
-    karpenter = {
-      most_recent = true
-      configuration_values = jsonencode({
-        controller = {
-          clusterName     = var.cluster_name
-          clusterEndpoint = var.cluster_endpoint
-        }
-      })
-    }
   }
-
+  
+  karpenter_enable_spot_termination          = true
+  karpenter_enable_instance_profile_creation = true
+  karpenter_node = {
+    iam_role_use_name_prefix = false
+  }
 
   # Opinions for our game servers cluster
   enable_metrics_server               = true
@@ -107,8 +102,7 @@ module "eks_blueprints_addons" {
   enable_aws_for_fluentbit            = true
   enable_aws_load_balancer_controller = true
   enable_cert_manager                 = true
-
-
+  enable_karpenter                    = true
 }
 
 
