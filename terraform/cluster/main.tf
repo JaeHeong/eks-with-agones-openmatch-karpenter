@@ -7,7 +7,6 @@ module "cluster1" {
   cluster_cidr   = var.cluster_1_cidr
   open_match     = true
 }
-
 module "cluster2" {
  source         = "./modules/cluster"
  cluster_name   = var.cluster_2_name
