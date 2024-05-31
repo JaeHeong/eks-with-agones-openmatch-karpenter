@@ -1,7 +1,7 @@
 ## Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
 ## SPDX-License-Identifier: MIT-0
 export GAMESERVER_TYPE=ncat 
-export NAMESPACE=default
+export NAMESPACE=gameservers
 export CLUSTER_NAME1=$1
 export REGION1=$2
 export CLUSTER_NAME2=$3
