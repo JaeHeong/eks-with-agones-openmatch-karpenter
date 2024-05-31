@@ -16,8 +16,34 @@ locals {
   cluster_region     = var.cluster_region
   gameserver_minport = 7000
   gameserver_maxport = 7029
+  additional_roles = [
+    {
+      rolearn  = module.eks_blueprints_addons.karpenter.node_iam_role_arn
+      username = "system:node:{{EC2PrivateDNSName}}"
+      groups = [
+        "system:bootstrappers",
+        "system:nodes",
+      ]
+    }
+  ]
 }
 
+resource "kubernetes_config_map" "aws_auth" {
+  metadata {
+    name      = "aws-auth"
+    namespace = "kube-system"
+  }
+
+  data = {
+    mapRoles = jsonencode([
+      for role in concat(var.aws_auth_roles, local.additional_roles) : {
+        rolearn  = role.rolearn
+        username = role.username
+        groups   = role.groups
+      }
+    ])
+  }
+}
 
 provider "helm" {
   kubernetes {
@@ -306,4 +332,9 @@ data "aws_lb" "frontend_lb" {
   count      = var.configure_open_match ? 1 : 0
   name       = "${var.cluster_name}-om-fe"
   depends_on = [null_resource.open_match_ingress_configuration]
+}
+
+output "node_instance_profile_name" {
+  description = "IAM Role name that each Karpenter node will use"
+  value       = module.eks_blueprints_addons.karpenter.node_instance_profile_name
 }

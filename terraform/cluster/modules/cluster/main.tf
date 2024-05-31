@@ -11,7 +11,6 @@ locals {
     Blueprint  = var.cluster_name
     GithubRepo = "github.com/aws-ia/terraform-aws-eks-blueprints"
   }
-
 }
 
 data "aws_eks_cluster_auth" "this" {
@@ -136,12 +135,28 @@ module "eks" {
     }
 
   }
+  
   manage_aws_auth_configmap = true
   aws_auth_roles = flatten([
-    module.eks_blueprints_admin_team.aws_auth_configmap_role
-  ])
+      module.eks_blueprints_admin_team.aws_auth_configmap_role
+    ])
+  # aws_auth_roles = flatten([
+  #   module.eks_blueprints_admin_team.aws_auth_configmap_role,
+  #   [
+  #     {
+  #       rolearn  = module.eks_blueprints_addons.karpenter.node_iam_role_arn
+  #       username = "system:node:{{EC2PrivateDNSName}}"
+  #       groups = [
+  #         "system:bootstrappers",
+  #         "system:nodes",
+  #       ]
+  #     }
+  #   ]
+  # ])
 
-  tags = local.tags
+  tags = merge(local.tags, {
+    "karpenter.sh/discovery" = var.cluster_name
+  })
 }
 
 
@@ -179,7 +194,14 @@ module "vpc" {
   default_security_group_tags   = { Name = "${var.cluster_name}-default" }
 
 
+  public_subnet_tags = {
+    "kubernetes.io/cluster/${var.cluster_name}" = "shared"
+    # "kubernetes.io/role/elb"              = 1
+    "karpenter.sh/discovery"              = var.cluster_name
+  }
+
   private_subnet_tags = {
+   "kubernetes.io/cluster/${var.cluster_name}" = "shared"
     "kubernetes.io/role/internal-elb" = 1
   }
 
