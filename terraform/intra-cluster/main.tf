@@ -2,7 +2,13 @@
 ## SPDX-License-Identifier: MIT-0
 
 provider "aws" {
+  region = "us-east-1"
+  alias  = "virginia"
+}
+
+provider "aws" {
   region = var.cluster_region
+  alias  = "my_region"
 }
 
 locals {
@@ -41,6 +47,9 @@ provider "kubernetes" {
   }
 }
 
+data "aws_ecrpublic_authorization_token" "token" {
+  provider = aws.virginia
+}
 
 resource "kubernetes_namespace" "this" {
   #   provider = local.kubernetes_alias
@@ -66,6 +75,10 @@ module "eks_blueprints_addons" {
   source  = "aws-ia/eks-blueprints-addons/aws"
   version = "~> 1.0" #ensure to update this to the latest/desired version
 
+  providers = {
+    aws = aws.my_region
+  }
+
   cluster_name      = var.cluster_name
   cluster_endpoint  = var.cluster_endpoint
   cluster_version   = var.cluster_version
@@ -90,6 +103,11 @@ module "eks_blueprints_addons" {
     }
   }
   
+  enable_karpenter                    = true
+  karpenter = {
+    repository_username = data.aws_ecrpublic_authorization_token.token.user_name
+    repository_password = data.aws_ecrpublic_authorization_token.token.password
+  }
   karpenter_enable_spot_termination          = true
   karpenter_enable_instance_profile_creation = true
   karpenter_node = {
@@ -102,7 +120,6 @@ module "eks_blueprints_addons" {
   enable_aws_for_fluentbit            = true
   enable_aws_load_balancer_controller = true
   enable_cert_manager                 = true
-  enable_karpenter                    = true
 }
 
 
