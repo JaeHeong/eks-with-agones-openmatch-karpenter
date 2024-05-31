@@ -11,12 +11,22 @@ provider "aws" {
   alias  = "my_region"
 }
 
+data "kubernetes_config_map_v1" "aws_auth" {
+  metadata {
+    name      = "aws-auth"
+    namespace = "kube-system"
+  }
+}
+
 locals {
   name               = var.cluster_name
   cluster_region     = var.cluster_region
   gameserver_minport = 7000
   gameserver_maxport = 7029
-  additional_roles = [
+
+  existing_map_roles = yamldecode(data.kubernetes_config_map_v1.aws_auth.data.mapRoles)
+  
+  eks_aws_roles = [
     {
       rolearn  = module.eks_blueprints_addons.karpenter.node_iam_role_arn
       username = "system:node:{{EC2PrivateDNSName}}"
@@ -26,23 +36,22 @@ locals {
       ]
     }
   ]
+
+  merged_map_roles = concat(local.existing_map_roles, local.eks_aws_roles)
+  
+  aws_auth_data = {
+    mapRoles    = yamlencode(local.merged_map_roles)
+  }
 }
 
-resource "kubernetes_config_map" "aws_auth" {
+resource "kubernetes_config_map_v1_data" "aws_auth" {
   metadata {
     name      = "aws-auth"
     namespace = "kube-system"
   }
 
-  data = {
-    mapRoles = jsonencode([
-      for role in concat(var.aws_auth_roles, local.additional_roles) : {
-        rolearn  = role.rolearn
-        username = role.username
-        groups   = role.groups
-      }
-    ])
-  }
+  data = local.aws_auth_data
+  force = true
 }
 
 provider "helm" {
