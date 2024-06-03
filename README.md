@@ -30,17 +30,17 @@ This README aims to provide a succint installation guide for the integration. Fo
 ├── README.md   # This file
 ├── DETAILS.md  # Extra documentation
 ├── integration # Golang code and Dockerfiles for Open Match - Agones integration
-│   ├── clients 
-│   │   ├── allocation-client
-│   │   ├── ncat
-│   │   └── stk
-│   ├── director 
-│   ├── matchfunction
-│   └── ncat-server
+│   ├── clients 
+│   │   ├── allocation-client
+│   │   ├── ncat
+│   │   └── stk
+│   ├── director 
+│   ├── matchfunction
+│   └── ncat-server
 ├── manifests   # Kubernetes YAML manifests
-│   └── fleets
-│       ├── ncat
-│       └── stk
+│   └── fleets
+│       ├── ncat
+│       └── stk
 ├── scripts     # Shell scripts
 └── terraform   # Terraform code
     ├── cluster
@@ -80,6 +80,12 @@ To deploy the infrastructure and run the examples, we need:
 - [Go](https://go.dev/doc/install)
 - [Docker](https://docs.docker.com/get-docker/)
 - [OpenSSL](https://www.openssl.org/source/)
+
+## Kubectl CheatSheet
+- source <(kubectl completion bash) # bash-completion 패키지를 먼저 설치한 후, bash의 자동 완성을 현재 셸에 설정한다
+- echo "source <(kubectl completion bash)" >> ~/.bashrc # 자동 완성을 bash 셸에 영구적으로 추가한다
+- alias k=kubectl
+- complete -o default -F __start_kubectl k
 
 ## Create the clusters and deploy the required components
 
@@ -207,6 +213,167 @@ global_accelerator_address = "abcdefgh123456789.awsglobalaccelerator.com"
 
 Please, save the `global_accelerator_address` value, as we will use it later to connect to our game servers. In case we need to retrieve it, we can run `terraform -chdir=terraform/extra-cluster output`. 
 
+## Edit agones-controller for test
+- ephemeral-storage 10100Mi -> 5000Mi
+- kubectl patch deployment agones-controller --namespace agones-system --type='json' -p='[{"op": "replace", "path": "/spec/template/spec/containers/0/resources/limits/ephemeral-storage", "value": "5000Mi"}, {"op": "replace", "path": "/spec/template/spec/containers/0/resources/requests/ephemeral-storage", "value": "5000Mi"}]'
+
+## Kube-Ops-View
+- kubectl apply -f kube-ops-viewer/
+- kubectl patch service kube-ops-view -p '{"spec":{"type":"LoadBalancer"}}'
+- Wait a minute to deploy the LoadBalancer
+- kubectl get svc kube-ops-view | tail -n 1 | awk '{ print "Kube-ops-view URL = http://"$4 }'
+
+## eks-node-viewer
+- eks-node-viewer
+
+## Show Logging Karpenter
+- alias kl='kubectl -n karpenter logs -l app.kubernetes.io/name=karpenter --all-containers=true -f --tail=20';
+- kl
+
+## Use Karpenter
+### prerequisite
+- aws iam create-service-linked-role --aws-service-name spot.amazonaws.com || true
+### Create NodePool and Ec2NodeClass
+- export KARPENTER_NODE_IAM_ROLE_NAME1=karpenter-${CLUSTER1}
+- export KARPENTER_NODE_IAM_ROLE_NAME2=karpenter-${CLUSTER2}
+```
+# Create NodePool - cluster1
+cat <<EOF | kubectl apply -f -
+apiVersion: karpenter.sh/v1beta1
+kind: NodePool
+metadata:
+  name: default 
+spec:  
+  template:
+    metadata:
+      labels:
+        intent: apps
+    spec:
+      requirements:
+        - key: kubernetes.io/arch
+          operator: In
+          values: ["amd64", "arm64"]
+        - key: "karpenter.k8s.aws/instance-cpu"
+          operator: Gt
+          values: ["4"]
+        - key: "karpenter.k8s.aws/instance-memory"
+          operator: Gt
+          values: ["8191"] # 8 * 1024 - 1
+        - key: karpenter.sh/capacity-type
+          operator: In
+          values: ["spot"]
+        - key: karpenter.k8s.aws/instance-category
+          operator: In
+          values: ["c", "m", "r"]
+      nodeClassRef:
+        apiVersion: karpenter.k8s.aws/v1beta1
+        kind: EC2NodeClass
+        name: default
+      kubelet:
+        systemReserved:
+          cpu: 100m
+          memory: 100Mi
+  disruption:
+    consolidationPolicy: WhenUnderutilized
+    expireAfter: 168h # 7 * 24h = 168h
+  
+---   
+
+apiVersion: karpenter.k8s.aws/v1beta1
+kind: EC2NodeClass
+metadata:
+  name: default
+spec:
+  amiFamily: AL2
+  subnetSelectorTerms:          
+    - tags:
+        karpenter.sh/discovery: ${CLUSTER1}
+  securityGroupSelectorTerms:
+    - tags:
+        karpenter.sh/discovery: ${CLUSTER1}
+  role: ${KARPENTER_NODE_IAM_ROLE_NAME1}
+  tags:
+    project: build-on-aws
+    IntentLabel: apps
+    KarpenterNodePoolName: default
+    NodeType: default
+    intent: apps
+    karpenter.sh/discovery: ${CLUSTER1}
+EOF
+```
+```
+# Create NodePool - cluster2
+cat <<EOF | kubectl apply -f -
+apiVersion: karpenter.sh/v1beta1
+kind: NodePool
+metadata:
+  name: default 
+spec:  
+  template:
+    metadata:
+      labels:
+        intent: apps
+    spec:
+      requirements:
+        - key: kubernetes.io/arch
+          operator: In
+          values: ["amd64", "arm64"]
+        - key: "karpenter.k8s.aws/instance-cpu"
+          operator: Gt
+          values: ["4"]
+        - key: "karpenter.k8s.aws/instance-memory"
+          operator: Gt
+          values: ["8191"] # 8 * 1024 - 1
+        - key: karpenter.sh/capacity-type
+          operator: In
+          values: ["spot"]
+        - key: karpenter.k8s.aws/instance-category
+          operator: In
+          values: ["c", "m", "r"]
+      nodeClassRef:
+        apiVersion: karpenter.k8s.aws/v1beta1
+        kind: EC2NodeClass
+        name: default
+      kubelet:
+        systemReserved:
+          cpu: 100m
+          memory: 100Mi
+  disruption:
+    consolidationPolicy: WhenUnderutilized
+    expireAfter: 168h # 7 * 24h = 168h
+  
+---   
+
+apiVersion: karpenter.k8s.aws/v1beta1
+kind: EC2NodeClass
+metadata:
+  name: default
+spec:
+  amiFamily: AL2
+  subnetSelectorTerms:          
+    - tags:
+        karpenter.sh/discovery: ${CLUSTER2}
+  securityGroupSelectorTerms:
+    - tags:
+        karpenter.sh/discovery: ${CLUSTER2}
+  role: ${KARPENTER_NODE_IAM_ROLE_NAME2}
+  tags:
+    project: build-on-aws
+    IntentLabel: apps
+    KarpenterNodePoolName: default
+    NodeType: default
+    intent: apps
+    karpenter.sh/discovery: ${CLUSTER2}
+EOF
+```
+
+### Need below nodeSelector when deploy pod
+```
+spec:
+  nodeSelector:
+    intent: apps
+    karpenter.sh/capacity-type: spot
+```
 
 ## Build and deploy the game server fleets
 
@@ -427,3 +594,6 @@ We can use the fleets in the [fleets/stk/](fleets/stk/) folder and the client in
 
 # Security recommendations
 [This page](./security.md) provides suggestions of actions that should be taken to make the solution more secure acording to AWS best practices.
+
+# Reference
+- https://community.aws/content/2dhlDEUfwElQ9mhtOP6D8YJbULA/run-kubernetes-clusters-for-less-with-amazon-ec2-spot-and-karpenter#step-6-optional-simulate-spot-interruption
