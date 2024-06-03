@@ -345,8 +345,3 @@ data "aws_lb" "frontend_lb" {
   name       = "${var.cluster_name}-om-fe"
   depends_on = [null_resource.open_match_ingress_configuration]
 }
-
-output "node_instance_profile_name" {
-  description = "IAM Role name that each Karpenter node will use"
-  value       = module.eks_blueprints_addons.karpenter.node_instance_profile_name
-}

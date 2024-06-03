@@ -42,6 +42,7 @@ module "eks" {
       instance_types = var.agones_system_instance_types
       labels = {
         "agones.dev/agones-system" = true
+        intent                      = "control-apps"
       }
       taint = {
         dedicated = {
@@ -61,6 +62,7 @@ module "eks" {
       instance_types = var.agones_metrics_instance_types
       labels = {
         "agones.dev/agones-metrics" = true
+        intent                      = "control-apps"
       }
       taints = {
         dedicated = {
@@ -80,6 +82,7 @@ module "eks" {
       instance_types = var.open_match_instance_types
       labels = {
         "openmatch" = "system"
+        intent                      = "control-apps"
       }
       min_size     = var.open_match ? var.open_match_min_size : 0
       max_size     = var.open_match ? var.open_match_max_size : 1 # max_size can't be zero
@@ -92,6 +95,7 @@ module "eks" {
       instance_types = var.agones_openmatch_instance_types
       labels = {
         "openmatch" = "customization"
+        intent                      = "control-apps"
       }
       min_size     = var.open_match ? var.agones_openmatch_min_size : 0
       max_size     = var.open_match ? var.agones_openmatch_max_size : 1 # max_size can't be zero
