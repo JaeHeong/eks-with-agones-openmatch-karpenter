@@ -1,7 +1,7 @@
 ## Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
 ## SPDX-License-Identifier: MIT-0
 export GAMESERVER_TYPE=ncat 
-export NAMESPACE=default
+export NAMESPACE=gameservers
 export CLUSTER_NAME1=$1
 export REGION1=$2
 export CLUSTER_NAME2=$3
@@ -11,7 +11,7 @@ export REGISTRY=${ACCOUNT_ID}.dkr.ecr.${REGION1}.amazonaws.com
 
 
 aws ecr get-login-password --region ${REGION1} | docker login --username AWS --password-stdin $REGISTRY
-docker buildx build --platform=linux/amd64  -t $REGISTRY/agones-openmatch-ncat-server integration/ncat-server
+docker buildx build --platform=linux/amd64 -t $REGISTRY/agones-openmatch-ncat-server integration/ncat-server
 docker push $REGISTRY/agones-openmatch-ncat-server
 
 kubectl config use-context $(kubectl config get-contexts -o=name | grep ${CLUSTER_NAME1})

@@ -26,15 +26,8 @@ spec:
       template:
         spec:
           nodeSelector:
-                intent: apps
-                karpenter.sh/capacity-type: spot
-          affinity:
-            nodeAffinity:
-              requiredDuringSchedulingIgnoredDuringExecution:
-                nodeSelectorTerms:
-                - matchExpressions:
-                  - key: agones.dev/agones-gameserver
-                    operator: Exists
+            intent: apps
+            karpenter.sh/capacity-type: spot
           containers:
           - name: ncat
             args:

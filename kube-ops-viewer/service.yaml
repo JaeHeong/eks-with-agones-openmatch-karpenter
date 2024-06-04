@@ -1,6 +1,9 @@
 apiVersion: v1
 kind: Service
 metadata:
+  annotations:
+    kubernetes.io/ingress.class: alb
+    alb.ingress.kubernetes.io/scheme: internet-facing
   labels:
     application: kube-ops-view
     component: frontend
