@@ -252,7 +252,7 @@ spec:
       requirements:
         - key: kubernetes.io/arch
           operator: In
-          values: ["amd64", "arm64"]
+          values: ["amd64"]
         - key: "karpenter.k8s.aws/instance-cpu"
           operator: Gt
           values: ["4"]
@@ -317,7 +317,7 @@ spec:
       requirements:
         - key: kubernetes.io/arch
           operator: In
-          values: ["amd64", "arm64"]
+          values: ["amd64"]
         - key: "karpenter.k8s.aws/instance-cpu"
           operator: Gt
           values: ["4"]
