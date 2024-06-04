@@ -23,7 +23,7 @@ This guidance provides code and instructions to create a multi Kubernetes cluste
 This README aims to provide a succint installation guide for the integration. For more technical information about the deployment process, customization, and troubleshooting, please see the [Details](./DETAILS.md) page.
 ### High Level Architecture
 ![High Level Architecture](./agones-openmatch-multicluster.final.png)
-
+dd
 ### Repository organization
 ```bash
 .
