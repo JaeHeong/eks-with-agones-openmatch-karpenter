@@ -153,9 +153,9 @@ module "eks_blueprints_addons" {
   }
 
   # Opinions for our game servers cluster
-  enable_metrics_server               = true
-  enable_aws_cloudwatch_metrics       = true
-  enable_aws_for_fluentbit            = true
+  enable_metrics_server               = false
+  enable_aws_cloudwatch_metrics       = false
+  enable_aws_for_fluentbit            = false
   enable_aws_load_balancer_controller = true
   enable_cert_manager                 = true
 }
