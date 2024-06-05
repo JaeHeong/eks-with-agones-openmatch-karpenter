@@ -458,7 +458,8 @@ kubectl get secret open-match-tls-rootca -n open-match -o jsonpath="{.data.publi
 REGION1=us-east-1
 REGION2=us-east-2
 export GOPROXY=direct
-go run main.go -frontend <global_accelerator_address>:50504 -region1 $REGION1 -latencyRegion1 10 -region2 $REGION2 -latencyRegion2 30
+global_accelerator_address=$(terraform -chdir=../../../terraform/extra-cluster output | cut -d "=" -f 2 | cut -d "\"" -f 2)
+go run main.go -frontend $global_accelerator_address:50504 -region1 $REGION1 -region2 $REGION2
 ```
 
 >YYYY/MM/DD hh:mm:ss Connecting to Open Match Frontend
