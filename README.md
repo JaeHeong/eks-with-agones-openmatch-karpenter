@@ -525,9 +525,9 @@ We can use the fleets in the [fleets/stk/](fleets/stk/) folder and the client in
     If we are removing all the components of the solution, it's quicker to simply discard the Terraform state of the intra-cluster folder, since we will destroy the clusters in the next step, and this will automatically remove the intra-cluster components. 
     ```bash
     terraform -chdir=terraform/intra-cluster workspace select ${REGION1}
-    terraform -chdir=terraform/intra-cluster state list | cut -f 1 -d '[' | xargs -L 0 terraform -chdir=terraform/intra-cluster state rm
+    terraform -chdir=terraform/intra-cluster state list | cut -f 1 -d '[' | xargs -L 1 terraform -chdir=terraform/intra-cluster state rm
     terraform -chdir=terraform/intra-cluster workspace select ${REGION2}
-    terraform -chdir=terraform/intra-cluster state list | cut -f 1 -d '[' | xargs -L 0 terraform -chdir=terraform/intra-cluster state rm
+    terraform -chdir=terraform/intra-cluster state list | cut -f 1 -d '[' | xargs -L 1 terraform -chdir=terraform/intra-cluster state rm
     ``` 
     If we prefer to destroy the components in this stage (for example, to keep the clusters created by terraform/cluster and test terraform-intra clusters with other values and configurations), use the code below instead.
 
