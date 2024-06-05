@@ -171,7 +171,7 @@ agones:
       loadBalancerSourceRanges: []
       annotations: { 'service.beta.kubernetes.io/aws-load-balancer-scheme' : 'internet-facing' }
     udp:
-      expose: true
+      expose: false
       rateLimit: 20
       port: 50000
       serviceType: LoadBalancer
