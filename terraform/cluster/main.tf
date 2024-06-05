@@ -6,6 +6,7 @@ module "cluster1" {
   cluster_region = var.cluster_1_region
   cluster_cidr   = var.cluster_1_cidr
   open_match     = true
+  default_system = false
 }
 
 module "cluster2" {
@@ -14,6 +15,7 @@ module "cluster2" {
  cluster_region = var.cluster_2_region
  cluster_cidr   = var.cluster_2_cidr
  open_match     = false
+ default_system = true
 }
 
 #--------------------------------------------------------------

@@ -44,7 +44,7 @@ module "eks" {
         "agones.dev/agones-system" = true
         intent                      = "control-apps"
       }
-      taint = {
+      taints = {
         dedicated = {
           key    = "agones.dev/agones-system"
           value  = true
@@ -100,6 +100,18 @@ module "eks" {
       min_size     = var.open_match ? var.agones_openmatch_min_size : 0
       max_size     = var.open_match ? var.agones_openmatch_max_size : 1 # max_size can't be zero
       desired_size = var.open_match ? var.agones_openmatch_desired_size : 0
+
+      subnet_ids = slice(module.vpc.private_subnets, 0, 3)
+    }
+    
+    default_system = {
+      instance_types = var.agones_openmatch_instance_types
+      labels = {
+        intent                      = "control-apps"
+      }
+      min_size     = !var.open_match ? var.agones_openmatch_min_size : 0
+      max_size     = !var.open_match ? var.agones_openmatch_max_size : 1 # max_size can't be zero
+      desired_size = !var.open_match ? var.agones_openmatch_desired_size : 0
 
       subnet_ids = slice(module.vpc.private_subnets, 0, 3)
     }
