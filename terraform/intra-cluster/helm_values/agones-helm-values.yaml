@@ -177,7 +177,7 @@ agones:
       serviceType: LoadBalancer
       loadBalancerIP: ""
       loadBalancerSourceRanges: []
-      annotations: {  'service.beta.kubernetes.io/aws-load-balancer-type' : 'nlb' }
+      annotations: { 'service.beta.kubernetes.io/aws-load-balancer-scheme' : 'internet-facing', 'service.beta.kubernetes.io/aws-load-balancer-type' : 'nlb' }
     healthCheck:
       initialDelaySeconds: 3
       periodSeconds: 3

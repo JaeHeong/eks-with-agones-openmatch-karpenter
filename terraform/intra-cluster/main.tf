@@ -24,10 +24,10 @@ locals {
   gameserver_minport = 7000
   gameserver_maxport = 7029
 
-  existing_map_roles = yamldecode(data.kubernetes_config_map_v1.aws_auth.data.mapRoles)
+  # existing_map_roles = yamldecode(data.kubernetes_config_map_v1.aws_auth.data.mapRoles)
 
-  # kubectl delete configmap -n kube-system aws-auth
-  # existing_map_roles = try(yamldecode(data.kubernetes_config_map_v1.aws_auth.data.mapRoles), [])
+  # When delete use this
+  existing_map_roles = try(yamldecode(data.kubernetes_config_map_v1.aws_auth.data.mapRoles), [])
   
   eks_aws_roles = [
     {
