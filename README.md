@@ -136,6 +136,17 @@ The commands below will deploy our resources inside the clusters created in the 
 terraform -chdir=terraform/intra-cluster init  &&
 # Deploy to the first cluster
 terraform -chdir=terraform/intra-cluster workspace select -or-create=true ${REGION1} &&
+terraform -chdir=terraform/intra-cluster apply -target="module.eks_blueprints_addons" -auto-approve \
+ -var="cluster_name=${CLUSTER1}" \
+ -var="cluster_region=${REGION1}" \
+ -var="cluster_endpoint=$(terraform -chdir=terraform/cluster output -raw cluster_1_endpoint)" \
+ -var="cluster_certificate_authority_data=$(terraform -chdir=terraform/cluster output -raw cluster_1_certificate_authority_data)" \
+ -var="cluster_token=$(terraform -chdir=terraform/cluster output -raw cluster_1_token)" \
+ -var="cluster_version=${VERSION}" \
+ -var="oidc_provider_arn=$(terraform -chdir=terraform/cluster output -raw oidc_provider_1_arn)" \
+ -var="namespaces=[\"agones-openmatch\", \"agones-system\", \"gameservers\", \"open-match\"]" \
+ -var="configure_agones=true" \
+ -var="configure_open_match=true" &&
 terraform -chdir=terraform/intra-cluster apply -auto-approve \
  -var="cluster_name=${CLUSTER1}" \
  -var="cluster_region=${REGION1}" \
@@ -149,6 +160,17 @@ terraform -chdir=terraform/intra-cluster apply -auto-approve \
  -var="configure_open_match=true" &&
 # Deploy to the second cluster
 terraform -chdir=terraform/intra-cluster workspace select -or-create=true ${REGION2} &&
+terraform -chdir=terraform/intra-cluster apply -target="module.eks_blueprints_addons" -auto-approve \
+ -var="cluster_name=${CLUSTER2}" \
+ -var="cluster_region=${REGION2}" \
+ -var="cluster_endpoint=$(terraform -chdir=terraform/cluster output -raw cluster_2_endpoint)" \
+ -var="cluster_certificate_authority_data=$(terraform -chdir=terraform/cluster output -raw cluster_2_certificate_authority_data)" \
+ -var="cluster_token=$(terraform -chdir=terraform/cluster output -raw cluster_2_token)" \
+ -var="cluster_version=${VERSION}" \
+ -var="oidc_provider_arn=$(terraform -chdir=terraform/cluster output -raw oidc_provider_2_arn)" \
+ -var="namespaces=[\"agones-system\", \"gameservers\"]" \
+ -var="configure_agones=true" \
+ -var="configure_open_match=false" &&
 terraform -chdir=terraform/intra-cluster apply -auto-approve \
  -var="cluster_name=${CLUSTER2}" \
  -var="cluster_region=${REGION2}" \
