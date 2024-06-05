@@ -147,6 +147,7 @@ terraform -chdir=terraform/intra-cluster apply -target="module.eks_blueprints_ad
  -var="namespaces=[\"agones-openmatch\", \"agones-system\", \"gameservers\", \"open-match\"]" \
  -var="configure_agones=true" \
  -var="configure_open_match=true" &&
+sleep 10 &&
 terraform -chdir=terraform/intra-cluster apply -auto-approve \
  -var="cluster_name=${CLUSTER1}" \
  -var="cluster_region=${REGION1}" \
@@ -171,6 +172,7 @@ terraform -chdir=terraform/intra-cluster apply -target="module.eks_blueprints_ad
  -var="namespaces=[\"agones-system\", \"gameservers\"]" \
  -var="configure_agones=true" \
  -var="configure_open_match=false" &&
+sleep 10 &&
 terraform -chdir=terraform/intra-cluster apply -auto-approve \
  -var="cluster_name=${CLUSTER2}" \
  -var="cluster_region=${REGION2}" \
