@@ -141,7 +141,7 @@ agones:
       periodSeconds: 3
       failureThreshold: 3
   ping:
-    install: true
+    install: false
     resources: {}
     # requests:
     #   cpu: 1
@@ -171,7 +171,7 @@ agones:
       loadBalancerSourceRanges: []
       annotations: { 'service.beta.kubernetes.io/aws-load-balancer-scheme' : 'internet-facing' }
     udp:
-      expose: false
+      expose: true
       rateLimit: 20
       port: 50000
       serviceType: LoadBalancer
