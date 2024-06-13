@@ -6,11 +6,9 @@ import (
 	"flag"
 	"fmt"
 	"net"
-	"net/http"
 	"os"
 	"strings"
 	"sync"
-	"time"
 )
 
 const (
@@ -72,42 +70,30 @@ func ConnectGameServer(server string) {
 	wg.Wait()
 }
 
-func GetLatency(url string) (int, error) {
-	start := time.Now()
-	_, err := http.Get(url)
-	if err != nil {
-		return 0, err
-	}
-	elapsed := time.Since(start).Milliseconds()
-	return int(elapsed), nil
-}
-
-var omFrontendEndpoint, region1, region2 string
+var omFrontendEndpoint, room, region string
 
 func main() {
 	flag.StringVar(&omFrontendEndpoint, "frontend", "localhost:50504", "Open Match Frontend Endpoint")
-	flag.StringVar(&region1, "region1", "us-east-1", "Region 1")
-	flag.StringVar(&region2, "region2", "us-east-2", "Region 2")
+	flag.StringVar(&room, "room", "", "Room ID")
+	flag.StringVar(&region, "region", "us-east-1", "Region")
 	flag.Usage = func() {
 		fmt.Printf("Usage: \n")
-		fmt.Printf("player -frontend FrontendAddress:Port\n")
+		fmt.Printf("player -frontend FrontendAddress:Port -room RoomID -region Region\n")
 		flag.PrintDefaults()
 	}
 	flag.Parse()
 
-	latencyRegion1, err := GetLatency(fmt.Sprintf("http://agones-gameservers-1-ping-http-144f7064dfa9723c.elb.%s.amazonaws.com", region1))
-	if err != nil {
-		fmt.Printf("Error getting latency for region 1: %v\n", err)
-		os.Exit(1)
+	if room == "" {
+		fmt.Println("Room ID is required.")
+		return
 	}
 
-	latencyRegion2, err := GetLatency(fmt.Sprintf("http://agones-gameservers-2-ping-http-c4aac562de6989f7.elb.%s.amazonaws.com", region2))
-	if err != nil {
-		fmt.Printf("Error getting latency for region 2: %v\n", err)
-		os.Exit(1)
+	if region == "" {
+		fmt.Println("Region is required.")
+		return
 	}
 
-	serverPort := allocation.GetServerAssignment(omFrontendEndpoint, region1, latencyRegion1, region2, latencyRegion2)
+	serverPort := allocation.GetServerAssignment(omFrontendEndpoint, room, region)
 	fmt.Println(serverPort)
 	serverPort = strings.Replace(serverPort, "\"", "", -1)
 	serverPort = strings.Replace(serverPort, "connection:", "", 1)

@@ -1,13 +1,8 @@
-// Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
-// SPDX-License-Identifier: MIT-0
-
 package main
 
 import (
 	"fmt"
 	"log"
-	"regexp"
-	"sort"
 	"time"
 
 	"google.golang.org/protobuf/types/known/anypb"
@@ -51,68 +46,50 @@ func (s *MatchFunctionService) Run(req *pb.RunRequest, stream pb.MatchFunction_R
 func makeMatches(p *pb.MatchProfile, poolTickets map[string][]*pb.Ticket) ([]*pb.Match, error) {
 	var matches []*pb.Match
 	count := 0
-	unsortedMatchTickets := []*pb.Ticket{}
-	for {
-		insufficientTickets := false
-		for pool, tickets := range poolTickets {
-			if len(tickets) < TicketsPerPoolPerMatch {
-				insufficientTickets = true
-				break
+
+	regionRoomTicketsMap := make(map[string]map[string][]*pb.Ticket)
+	for _, tickets := range poolTickets {
+		for _, ticket := range tickets {
+			region := ticket.SearchFields.StringArgs["region"]
+			room := ticket.SearchFields.StringArgs["room"]
+			if regionRoomTicketsMap[region] == nil {
+				regionRoomTicketsMap[region] = make(map[string][]*pb.Ticket)
 			}
-
-			unsortedMatchTickets = append(unsortedMatchTickets, tickets[0:TicketsPerPoolPerMatch]...)
-			poolTickets[pool] = tickets[TicketsPerPoolPerMatch:]
+			regionRoomTicketsMap[region][room] = append(regionRoomTicketsMap[region][room], ticket)
 		}
-
-		if insufficientTickets {
-			break
-		}
-
-		count++
 	}
-	totalLatency := 0.0
-	// Regular expression for AWS regions
-	regionPattern := `(us(-gov)?|af|ap|ca|cn|eu|il|me|sa)-(central|(north|south)?(east|west)?)-\d`
-	regexpPattern := regexp.MustCompile(regionPattern)
-	if len(unsortedMatchTickets) > 0 {
-		sort.Slice(unsortedMatchTickets, func(i, j int) bool {
-			return unsortedMatchTickets[i].SearchFields.DoubleArgs["latency-"+unsortedMatchTickets[i].SearchFields.StringArgs["region"]] < unsortedMatchTickets[j].SearchFields.DoubleArgs["latency-"+unsortedMatchTickets[j].SearchFields.StringArgs["region"]]
-		})
-		for matchIndex := 0; matchIndex < count; matchIndex++ {
-			matchTickets := []*pb.Ticket{}
-			for ticketIndex := 0; ticketIndex < TicketsPerPoolPerMatch; ticketIndex++ {
-				log.Printf("MatchProfile name: %s: ", p.GetName())
-				currentTicket := unsortedMatchTickets[TicketsPerPoolPerMatch*matchIndex+ticketIndex]
-				region := regexpPattern.FindString(p.GetName())
-				totalLatency = totalLatency + currentTicket.SearchFields.DoubleArgs["latency-"+region]
-				matchTickets = append(matchTickets, currentTicket)
+
+	for region, roomTickets := range regionRoomTicketsMap {
+		for room, tickets := range roomTickets {
+			for len(tickets) >= TicketsPerPoolPerMatch {
+				matchTickets := tickets[:TicketsPerPoolPerMatch]
+				tickets = tickets[TicketsPerPoolPerMatch:]
+
+				matchScore := 1000 // Fixed score for simplicity
+				evaluationInput, err := anypb.New(&pb.DefaultEvaluationCriteria{
+					Score: float64(matchScore),
+				})
+				if err != nil {
+					log.Printf("Failed to marshal DefaultEvaluationCriteria, got %v.", err)
+					return nil, fmt.Errorf("Failed to marshal DefaultEvaluationCriteria, got %w", err)
+				}
+
+				matchId := fmt.Sprintf("profile-%v-region-%v-room-%v-time-%v-%v", p.GetName(), region, room, time.Now().Format("2006-01-02T15:04:05.00"), count)
+				log.Printf("MatchId: %s: ", matchId)
+				matches = append(matches, &pb.Match{
+					MatchId:       matchId,
+					MatchProfile:  p.GetName(),
+					MatchFunction: matchName,
+					Tickets:       matchTickets,
+					Extensions: map[string]*anypb.Any{
+						"evaluation_input": evaluationInput,
+					},
+				})
+
+				count++
 			}
-
-			matchScore := 1000 / (totalLatency / float64(TicketsPerPoolPerMatch))
-			evaluationInput, err := anypb.New(&pb.DefaultEvaluationCriteria{
-				Score: matchScore,
-			})
-
-			if err != nil {
-				log.Printf("Failed to marshal DefaultEvaluationCriteria, got %v.", err)
-				return nil, fmt.Errorf("Failed to marshal DefaultEvaluationCriteria, got %w", err)
-			}
-
-			matchId := fmt.Sprintf("profile-%v-time-%v-%v", p.GetName(), time.Now().Format("2006-01-02T15:04:05.00"), matchIndex)
-			log.Printf("MatchId: %s: ", matchId)
-			matches = append(matches, &pb.Match{
-				MatchId:       matchId,
-				MatchProfile:  p.GetName(),
-				MatchFunction: matchName,
-				Tickets:       matchTickets,
-				Extensions: map[string]*anypb.Any{
-					"evaluation_input": evaluationInput,
-				},
-			})
-
 		}
 	}
 
 	return matches, nil
-
 }

@@ -1,7 +1,6 @@
 ## Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
 ## SPDX-License-Identifier: MIT-0
 
-
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -52,8 +51,8 @@ spec:
         - -multicluster
         - -regions 
         - $(REGIONS)
-        - -ranges 
-        - $(RANGES)
+        - -roomIDs
+        - $(ROOM_IDS)
         - -interval
         - $(INTERVAL)
         
@@ -80,8 +79,8 @@ spec:
           value: agones-system
         - name: REGIONS
           value: ${REGION1},${REGION2}
-        - name: RANGES
-          value: 0-24,25-49,50-74,74-99,100-9999
+        - name: ROOM_IDS
+          value: room1,room2
         - name: INTERVAL
           value: "5"
 
@@ -125,4 +124,3 @@ spec:
           defaultMode: 420
           name: global-accelerator-mapping
         name: global-accelerator-mapping
-

@@ -1,6 +1,3 @@
-// Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
-// SPDX-License-Identifier: MIT-0
-
 package allocation
 
 import (
@@ -24,7 +21,6 @@ type MatchRequest struct {
 	Ticket     *pb.Ticket
 	Tags       []string
 	StringArgs map[string]string
-	DoubleArgs map[string]float64
 }
 
 type Player struct {
@@ -50,7 +46,7 @@ func createRemoteClusterDialOption(clientCert, clientKey, caCert []byte) (grpc.D
 	return grpc.WithTransportCredentials(credentials.NewTLS(tlsConfig)), nil
 }
 
-func GetServerAssignment(omFrontendEndpoint string, region1 string, latencyRegion1 int, region2 string, latencyRegion2 int) string {
+func GetServerAssignment(omFrontendEndpoint string, room string, region string) string {
 	log.Printf("Connecting to Open Match Frontend: " + omFrontendEndpoint)
 	cert, err := os.ReadFile("public.cert")
 	if err != nil {
@@ -79,16 +75,16 @@ func GetServerAssignment(omFrontendEndpoint string, region1 string, latencyRegio
 		UID: uuid.New().String(),
 		MatchRequest: &MatchRequest{
 			Tags: []string{GAME_MODE_SESSION},
-			DoubleArgs: map[string]float64{
-				"latency-" + region1: float64(latencyRegion1),
-				"latency-" + region2: float64(latencyRegion2),
+			StringArgs: map[string]string{
+				"room":   room,
+				"region": region,
 			},
 		}}
 	req := &pb.CreateTicketRequest{
 		Ticket: &pb.Ticket{
 			SearchFields: &pb.SearchFields{
 				Tags:       player.MatchRequest.Tags,
-				DoubleArgs: player.MatchRequest.DoubleArgs,
+				StringArgs: player.MatchRequest.StringArgs,
 			},
 		},
 	}
@@ -113,8 +109,7 @@ func GetServerAssignment(omFrontendEndpoint string, region1 string, latencyRegio
 			log.Printf("Disconnecting from Open Match Frontend")
 
 			defer conn.Close()
-			return ticket.Assignment.String()
+			return ticket.Assignment.Connection
 		}
-
 	}
 }

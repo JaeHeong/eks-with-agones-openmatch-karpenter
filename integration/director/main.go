@@ -1,6 +1,3 @@
-// Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
-// SPDX-License-Identifier: MIT-0
-
 package main
 
 import (
@@ -27,11 +24,7 @@ import (
 	"open-match.dev/open-match/pkg/pb"
 )
 
-// This Director continuously polls Open Match for the Match
-// Profiles, submits the tickets to Agones Allocator service
-// and returns the allocation to the Frontend.
-
-var backendAddr, functionAddr, allocatorAddr, backendPort, certFile, keyFile, caFile, namespace, region, regions, ranges, regionPattern string
+var backendAddr, functionAddr, allocatorAddr, backendPort, certFile, keyFile, caFile, namespace, regions, roomIDs, regionPattern string
 var functionPort, allocatorPort, interval int
 var multicluster bool
 
@@ -48,7 +41,7 @@ func main() {
 	flag.BoolVar(&multicluster, "multicluster", false, "Multi-Cluster allocation")
 	flag.StringVar(&namespace, "namespace", "default", "Game servers namespace")
 	flag.StringVar(&regions, "regions", "us-east-1,us-east-2", "List of regions, separated by ','")
-	flag.StringVar(&ranges, "ranges", "0-24,25-49,50-74,74-99,100-9999", "List of latency ranges, in the format min-max, separated by ','")
+	flag.StringVar(&roomIDs, "roomIDs", "room1,room2", "List of room IDs, separated by ','")
 	flag.IntVar(&interval, "interval", 5, "Polling interval, in seconds")
 
 	flag.Usage = func() {
@@ -61,7 +54,7 @@ func main() {
 	keyFile = "./agones-tls/" + keyFile
 	caFile = "./agones-tls/" + caFile
 	regionsArr := strings.Split(regions, ",")
-	rangesArr := strings.Split(ranges, ",")
+	roomIDsArr := strings.Split(roomIDs, ",")
 	accelerator := make(map[string]string)
 	// Regular expression for AWS regions
 	regionPattern = `(us(-gov)?|af|ap|ca|cn|eu|il|me|sa)-(central|(north|south)?(east|west)?)-\d`
@@ -151,32 +144,32 @@ func main() {
 	be := pb.NewBackendServiceClient(conn)
 
 	// Generate the profiles to fetch matches for.
-	profiles := generateProfiles(regionsArr, rangesArr)
-	log.Printf("Fetching matches for %v profiles", len(profiles))
-
-	for range time.Tick(time.Second * time.Duration(interval)) {
-		// Fetch matches for each profile
+	for {
 		var wg sync.WaitGroup
-		for _, p := range profiles {
+		for _, region := range regionsArr {
 			wg.Add(1)
-			go func(wg *sync.WaitGroup, p *pb.MatchProfile) {
+			go func(region string) {
 				defer wg.Done()
-				matches, err := fetch(be, p)
-				if err != nil {
-					log.Printf("Failed to fetch matches for profile %v, got %s", p.GetName(), err.Error())
-					return
+				profiles := generateProfiles([]string{region}, roomIDsArr)
+				log.Printf("Fetching matches for profiles: region=%s", region)
+				for _, p := range profiles {
+					matches, err := fetch(be, p)
+					if err != nil {
+						log.Printf("Failed to fetch matches for profile %v, got %s", p.GetName(), err.Error())
+						return
+					}
+					if len(matches) > 0 {
+						log.Printf("Generated %v matches for profile %v", len(matches), p.GetName())
+					}
+					if err := assign(be, matches, mappingJson, accelerator); err != nil {
+						log.Printf("Failed to assign servers to matches, got %s", err.Error())
+						return
+					}
 				}
-				if len(matches) > 0 {
-					log.Printf("Generated %v matches for profile %v", len(matches), p.GetName())
-				}
-				if err := assign(be, matches, mappingJson, accelerator); err != nil {
-					log.Printf("Failed to assign servers to matches, got %s", err.Error())
-					return
-				}
-			}(&wg, p)
+			}(region)
 		}
-
 		wg.Wait()
+		time.Sleep(time.Second * time.Duration(interval))
 	}
 }
 
@@ -288,7 +281,7 @@ func assign(be pb.BackendServiceClient, matches []*pb.Match, mappingJson map[str
 		}
 		matchId := match.GetMatchId()
 		regexpPattern := regexp.MustCompile(regionPattern)
-		region = regexpPattern.FindString(matchId)
+		region := regexpPattern.FindString(matchId)
 
 		allocation := getAllocation(matchId)
 		log.Printf("Agones Allocator response: %s", allocation.String())
