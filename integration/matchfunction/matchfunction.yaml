@@ -41,7 +41,7 @@ spec:
         - name: OPENMATCH_QUERY_SERVICE_PORT
           value: "50503"
         - name: NUM_PLAYERS
-          value: "4"
+          value: "10"
         image: ${REGISTRY}/agones-openmatch-mmf:latest
         imagePullPolicy: Always
         securityContext:
