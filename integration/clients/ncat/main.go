@@ -7,8 +7,10 @@ import (
 	"fmt"
 	"net"
 	"os"
+	"os/signal"
 	"strings"
 	"sync"
+	"syscall"
 )
 
 const (
@@ -17,6 +19,7 @@ const (
 )
 
 var wg sync.WaitGroup
+var omFrontendEndpoint string
 
 func Read(conn net.Conn) {
 	reader := bufio.NewReader(conn)
@@ -70,7 +73,20 @@ func ConnectGameServer(server string) {
 	wg.Wait()
 }
 
-var omFrontendEndpoint, room, region string
+func handleExit() {
+	if allocation.TicketID != "" {
+		fmt.Println("Deleting ticket before exiting...")
+		err := allocation.DeleteTicket(omFrontendEndpoint, allocation.TicketID)
+		if err != nil {
+			fmt.Printf("Failed to delete ticket: %v\n", err)
+		} else {
+			fmt.Println("Successfully deleted ticket.")
+		}
+	}
+	os.Exit(0)
+}
+
+var room, region string
 
 func main() {
 	flag.StringVar(&omFrontendEndpoint, "frontend", "localhost:50504", "Open Match Frontend Endpoint")
@@ -93,9 +109,21 @@ func main() {
 		return
 	}
 
+	// Set up signal handling to clean up on exit
+	sigs := make(chan os.Signal, 1)
+	signal.Notify(sigs, syscall.SIGINT, syscall.SIGTERM)
+	go func() {
+		<-sigs
+		handleExit()
+	}()
+
+	// Create ticket and connect to game server
 	serverPort := allocation.GetServerAssignment(omFrontendEndpoint, room, region)
 	fmt.Println(serverPort)
 	serverPort = strings.Replace(serverPort, "\"", "", -1)
 	serverPort = strings.Replace(serverPort, "connection:", "", 1)
 	ConnectGameServer(serverPort)
+
+	// Keep the main function running to handle signals
+	select {}
 }

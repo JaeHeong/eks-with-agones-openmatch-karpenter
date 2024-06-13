@@ -6,28 +6,25 @@ import (
 )
 
 // Generates profiles based on regions and room IDs for the Director.
-func generateProfiles(regions []string, roomIDs []string) []*pb.MatchProfile {
+func generateProfiles(regions []string) []*pb.MatchProfile {
 	var profiles []*pb.MatchProfile
 
 	for _, region := range regions {
-		for _, roomID := range roomIDs {
-			profile := &pb.MatchProfile{
-				Name: fmt.Sprintf("profile_%s_%s", region, roomID),
-				Pools: []*pb.Pool{
-					{
-						Name: "pool_mode_" + region + "_" + roomID,
-						TagPresentFilters: []*pb.TagPresentFilter{
-							{Tag: "mode.session"},
-						},
-						StringEqualsFilters: []*pb.StringEqualsFilter{
-							{StringArg: "region", Value: region},
-							{StringArg: "room", Value: roomID},
-						},
+		profile := &pb.MatchProfile{
+			Name: fmt.Sprintf("profile_%s", region),
+			Pools: []*pb.Pool{
+				{
+					Name: "pool_mode_" + region,
+					TagPresentFilters: []*pb.TagPresentFilter{
+						{Tag: "mode.session"},
+					},
+					StringEqualsFilters: []*pb.StringEqualsFilter{
+						{StringArg: "region", Value: region},
 					},
 				},
-			}
-			profiles = append(profiles, profile)
+			},
 		}
+		profiles = append(profiles, profile)
 	}
 
 	return profiles

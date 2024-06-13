@@ -51,8 +51,6 @@ spec:
         - -multicluster
         - -regions 
         - $(REGIONS)
-        - -roomIDs
-        - $(ROOM_IDS)
         - -interval
         - $(INTERVAL)
         
@@ -79,8 +77,6 @@ spec:
           value: agones-system
         - name: REGIONS
           value: ${REGION1},${REGION2}
-        - name: ROOM_IDS
-          value: room1,room2
         - name: INTERVAL
           value: "5"
 

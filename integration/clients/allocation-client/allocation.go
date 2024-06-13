@@ -46,6 +46,8 @@ func createRemoteClusterDialOption(clientCert, clientKey, caCert []byte) (grpc.D
 	return grpc.WithTransportCredentials(credentials.NewTLS(tlsConfig)), nil
 }
 
+var TicketID string // 전역 변수로 선언
+
 func GetServerAssignment(omFrontendEndpoint string, room string, region string) string {
 	log.Printf("Connecting to Open Match Frontend: " + omFrontendEndpoint)
 	cert, err := os.ReadFile("public.cert")
@@ -93,6 +95,7 @@ func GetServerAssignment(omFrontendEndpoint string, room string, region string) 
 		log.Fatalf("Error: %v", err)
 	}
 	log.Printf("Ticket ID: %s\n", ticket.Id)
+	TicketID = ticket.Id // 전역 변수에 티켓 ID 저장
 	log.Printf("Waiting for ticket assignment")
 	for {
 		req := &pb.GetTicketRequest{
@@ -112,4 +115,36 @@ func GetServerAssignment(omFrontendEndpoint string, room string, region string) 
 			return ticket.Assignment.Connection
 		}
 	}
+}
+
+func DeleteTicket(omFrontendEndpoint string, ticketID string) error {
+	cert, err := os.ReadFile("public.cert")
+	if err != nil {
+		return err
+	}
+	key, err := os.ReadFile("private.key")
+	if err != nil {
+		return err
+	}
+	cacert, err := os.ReadFile("publicCA.cert")
+	if err != nil {
+		return err
+	}
+	dialOpts, err := createRemoteClusterDialOption(cert, key, cacert)
+	if err != nil {
+		return err
+	}
+	conn, err := grpc.Dial(omFrontendEndpoint, dialOpts)
+	if err != nil {
+		return fmt.Errorf("Failed to connect to Open Match Frontend, got %s", err)
+	}
+	defer conn.Close()
+
+	feService := pb.NewFrontendServiceClient(conn)
+	_, err = feService.DeleteTicket(context.Background(), &pb.DeleteTicketRequest{TicketId: ticketID})
+	if err != nil {
+		return fmt.Errorf("Failed to delete ticket: %v", err)
+	}
+
+	return nil
 }

@@ -24,7 +24,7 @@ import (
 	"open-match.dev/open-match/pkg/pb"
 )
 
-var backendAddr, functionAddr, allocatorAddr, backendPort, certFile, keyFile, caFile, namespace, regions, roomIDs, regionPattern string
+var backendAddr, functionAddr, allocatorAddr, backendPort, certFile, keyFile, caFile, namespace, regions, regionPattern string
 var functionPort, allocatorPort, interval int
 var multicluster bool
 
@@ -41,7 +41,6 @@ func main() {
 	flag.BoolVar(&multicluster, "multicluster", false, "Multi-Cluster allocation")
 	flag.StringVar(&namespace, "namespace", "default", "Game servers namespace")
 	flag.StringVar(&regions, "regions", "us-east-1,us-east-2", "List of regions, separated by ','")
-	flag.StringVar(&roomIDs, "roomIDs", "room1,room2", "List of room IDs, separated by ','")
 	flag.IntVar(&interval, "interval", 5, "Polling interval, in seconds")
 
 	flag.Usage = func() {
@@ -54,7 +53,6 @@ func main() {
 	keyFile = "./agones-tls/" + keyFile
 	caFile = "./agones-tls/" + caFile
 	regionsArr := strings.Split(regions, ",")
-	roomIDsArr := strings.Split(roomIDs, ",")
 	accelerator := make(map[string]string)
 	// Regular expression for AWS regions
 	regionPattern = `(us(-gov)?|af|ap|ca|cn|eu|il|me|sa)-(central|(north|south)?(east|west)?)-\d`
@@ -150,7 +148,7 @@ func main() {
 			wg.Add(1)
 			go func(region string) {
 				defer wg.Done()
-				profiles := generateProfiles([]string{region}, roomIDsArr)
+				profiles := generateProfiles([]string{region})
 				log.Printf("Fetching matches for profiles: region=%s", region)
 				for _, p := range profiles {
 					matches, err := fetch(be, p)
