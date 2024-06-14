@@ -16,6 +16,7 @@ spec:
         region: ${REGION}
     spec:
       players:
+      #  initialCapacity: 10 # 플레이어 수 제한을 10으로 설정
       ports:
       - name: default
         protocol: TCP
