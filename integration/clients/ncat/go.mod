@@ -1,8 +1,11 @@
 module agones-openmatch/ncat-player
 
-go 1.21
+go 1.20
 
-require agones-openmatch/allocation v0.0.0-00010101000000-000000000000
+require (
+	agones-openmatch/allocation v0.0.0-00010101000000-000000000000
+	github.com/joho/godotenv v1.5.1
+)
 
 require (
 	github.com/golang/protobuf v1.5.3 // indirect

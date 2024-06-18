@@ -5,7 +5,9 @@ import (
 	"bufio"
 	"flag"
 	"fmt"
+	"github.com/joho/godotenv"
 	"net"
+	"net/http"
 	"os"
 	"os/signal"
 	"strings"
@@ -20,6 +22,7 @@ const (
 
 var wg sync.WaitGroup
 var omFrontendEndpoint string
+var user string
 
 func Read(conn net.Conn) {
 	reader := bufio.NewReader(conn)
@@ -81,6 +84,14 @@ func handleExit() {
 			fmt.Printf("Failed to delete ticket: %v\n", err)
 		} else {
 			fmt.Println("Successfully deleted ticket.")
+			// Send DELETE request to API
+			url := fmt.Sprintf("%s?user=%s", os.Getenv("DEL_URL"), user)
+			_, err := http.Post(url, "application/json", nil)
+			if err != nil {
+				fmt.Printf("Failed to send delete request: %v\n", err)
+			} else {
+				fmt.Println("Successfully sent delete request.")
+			}
 		}
 	}
 	os.Exit(0)
@@ -89,12 +100,19 @@ func handleExit() {
 var room, region string
 
 func main() {
+	err := godotenv.Load(".env")
+
+	if err != nil {
+		fmt.Println("Error loading .env file")
+	}
+
 	flag.StringVar(&omFrontendEndpoint, "frontend", "localhost:50504", "Open Match Frontend Endpoint")
 	flag.StringVar(&room, "room", "", "Room ID")
 	flag.StringVar(&region, "region", "us-east-1", "Region")
+	flag.StringVar(&user, "user", "", "User Name")
 	flag.Usage = func() {
 		fmt.Printf("Usage: \n")
-		fmt.Printf("player -frontend FrontendAddress:Port -room RoomID -region Region\n")
+		fmt.Printf("player -frontend FrontendAddress:Port -room RoomID -region Region -user UserName\n")
 		flag.PrintDefaults()
 	}
 	flag.Parse()
@@ -106,6 +124,11 @@ func main() {
 
 	if region == "" {
 		fmt.Println("Region is required.")
+		return
+	}
+
+	if user == "" {
+		fmt.Println("User Name is required.")
 		return
 	}
 
@@ -122,6 +145,17 @@ func main() {
 	fmt.Println(serverPort)
 	serverPort = strings.Replace(serverPort, "\"", "", -1)
 	serverPort = strings.Replace(serverPort, "connection:", "", 1)
+
+	// Send POST request to API
+	url := fmt.Sprintf("%s?room=%s&region=%s&user=%s&server=%s", os.Getenv("SET_URL"), room, region, user, serverPort)
+	resp, err := http.Post(url, "application/json", nil)
+	if err != nil {
+		fmt.Printf("Failed to send request: %v\n", err)
+		return
+	}
+	defer resp.Body.Close()
+	fmt.Println("Successfully sent request to API.")
+
 	ConnectGameServer(serverPort)
 
 	// Keep the main function running to handle signals
