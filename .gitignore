@@ -8,3 +8,4 @@ tempfile.json
 terraform.tfstate*
 go.work*
 README.md
+.env
