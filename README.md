@@ -101,6 +101,9 @@ We will run terraform in three steps, following the `terraform` folder:
 
 <!-- summary 아래 한칸 공백 두고 내용 삽입 -->
 
+###
+- 클러스터 쪽 output 주석 해제
+
 ### Prepare terraform environment variables
 Define the names of our clusters and two different regions to run them. We can customize the clusters names, regions and VPC CIDR using the variables passed to the Terraform stack. In our examples we will be using `agones-gameservers-1` and `10.1.0.0/16` on region `us-east-1`, and `agones-gameservers-2` with `10.2.0.0/16` region `us-east-2`. Note that the CIDR of the VPCs should not overlap, since we will use VPC Peering to connect them.
 ```bash
@@ -248,6 +251,9 @@ Please, save the `global_accelerator_address` value, as we will use it later to 
     <summary>싱글 클러스터 배포</summary>
 
 <!-- summary 아래 한칸 공백 두고 내용 삽입 -->
+
+###
+- 클러스터 쪽 output 주석 처리
 
 ### Prepare terraform environment variables
 Define the names of our clusters and two different regions to run them. We can customize the clusters names, regions and VPC CIDR using the variables passed to the Terraform stack. In our examples we will be using `agones-gameservers-1` and `10.1.0.0/16` on region `us-east-1`, and `agones-gameservers-2` with `10.2.0.0/16` region `us-east-2`. Note that the CIDR of the VPCs should not overlap, since we will use VPC Peering to connect them.
