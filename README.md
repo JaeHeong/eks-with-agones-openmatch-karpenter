@@ -97,7 +97,7 @@ We will run terraform in three steps, following the `terraform` folder:
 3. terraform/extra-cluster: Creates additional AWS resources outside the cluster, like ECR repositories, VPC peering and Global Accelerator infrastructures.
 
 <details>
-    <summary>자세히</summary>
+    <summary>멀티 클러스터</summary>
 
 <!-- summary 아래 한칸 공백 두고 내용 삽입 -->
 
@@ -232,7 +232,6 @@ terraform -chdir=terraform/extra-cluster apply -auto-approve \
  -var="cluster_2_region=${REGION2}"
 
 ```
-</details>
 After several minutes, Terraform should end with a mesage similar to this:
 ```bash
 Apply complete! Resources: XX added, YY changed, ZZ destroyed.
@@ -242,6 +241,8 @@ global_accelerator_address = "abcdefgh123456789.awsglobalaccelerator.com"
 ```
 
 Please, save the `global_accelerator_address` value, as we will use it later to connect to our game servers. In case we need to retrieve it, we can run `terraform -chdir=terraform/extra-cluster output`. 
+
+</details>
 
 ## Edit agones-controller for test
 - ephemeral-storage 10100Mi -> 5000Mi
