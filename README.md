@@ -241,6 +241,44 @@ Please, save the `global_accelerator_address` value, as we will use it later to 
 - ephemeral-storage 10100Mi -> 5000Mi
 - kubectl patch deployment agones-controller --namespace agones-system --type='json' -p='[{"op": "replace", "path": "/spec/template/spec/containers/0/resources/limits/ephemeral-storage", "value": "5000Mi"}, {"op": "replace", "path": "/spec/template/spec/containers/0/resources/requests/ephemeral-storage", "value": "5000Mi"}]'
 
+## Edit agones-system for test
+```
+kubectl patch deployment agones-allocator -n agones-system --type=json -p='[
+  {
+    "op": "remove",
+    "path": "/spec/template/spec/affinity"
+  },
+  {
+    "op": "remove",
+    "path": "/spec/template/spec/tolerations"
+  }
+]'
+
+
+kubectl patch deployment agones-controller -n agones-system --type=json -p='[
+  {
+    "op": "remove",
+    "path": "/spec/template/spec/affinity"
+  },
+  {
+    "op": "remove",
+    "path": "/spec/template/spec/tolerations"
+  }
+]'
+
+
+kubectl patch deployment agones-extensions -n agones-system --type=json -p='[
+  {
+    "op": "remove",
+    "path": "/spec/template/spec/affinity"
+  },
+  {
+    "op": "remove",
+    "path": "/spec/template/spec/tolerations"
+  }
+]'
+```
+
 ## Kube-Ops-View
 - kubectl apply -f kube-ops-viewer/
 - kubectl patch service kube-ops-view -p '{"spec":{"type":"LoadBalancer"}}'
