@@ -104,6 +104,9 @@ We will run terraform in three steps, following the `terraform` folder:
 ###
 - main.tf 클러스터 쪽 주석 해제
 - 클러스터 쪽 output 주석 해제
+- extra main.tf랑 변수 주석 해제
+- extra main.tf 맨 밑에 null_resource 수정
+- director main.tf에서 글로벌엑셀러레이터 매핑 부분 수정
 
 ### Prepare terraform environment variables
 Define the names of our clusters and two different regions to run them. We can customize the clusters names, regions and VPC CIDR using the variables passed to the Terraform stack. In our examples we will be using `agones-gameservers-1` and `10.1.0.0/16` on region `us-east-1`, and `agones-gameservers-2` with `10.2.0.0/16` region `us-east-2`. Note that the CIDR of the VPCs should not overlap, since we will use VPC Peering to connect them.
@@ -256,6 +259,9 @@ Please, save the `global_accelerator_address` value, as we will use it later to 
 ###
 - main.tf 클러스터 쪽 주석 처리
 - 클러스터 쪽 output 주석 처리
+- extra main.tf랑 변수 주석 처리
+- extra main.tf 맨 밑에 null_resource 수정
+- director main.tf에서 글로벌엑셀러레이터 매핑 부분 수정
 
 ### Prepare terraform environment variables
 Define the names of our clusters and two different regions to run them. We can customize the clusters names, regions and VPC CIDR using the variables passed to the Terraform stack. In our examples we will be using `agones-gameservers-1` and `10.1.0.0/16` on region `us-east-1`, and `agones-gameservers-2` with `10.2.0.0/16` region `us-east-2`. Note that the CIDR of the VPCs should not overlap, since we will use VPC Peering to connect them.
@@ -354,7 +360,9 @@ Please, save the `global_accelerator_address` value, as we will use it later to 
 
 ## Edit agones-controller for test
 - ephemeral-storage 10100Mi -> 5000Mi
-- kubectl patch deployment agones-controller --namespace agones-system --type='json' -p='[{"op": "replace", "path": "/spec/template/spec/containers/0/resources/limits/ephemeral-storage", "value": "5000Mi"}, {"op": "replace", "path": "/spec/template/spec/containers/0/resources/requests/ephemeral-storage", "value": "5000Mi"}]'
+```
+kubectl patch deployment agones-controller --namespace agones-system --type='json' -p='[{"op": "replace", "path": "/spec/template/spec/containers/0/resources/limits/ephemeral-storage", "value": "5000Mi"}, {"op": "replace", "path": "/spec/template/spec/containers/0/resources/requests/ephemeral-storage", "value": "5000Mi"}]'
+```
 
 ## Edit agones-system for test
 ```

@@ -17,10 +17,10 @@ variable "cluster_1_cidr" {
   default = "10.1.0.0/16"
 }
 
-variable "cluster_2_cidr" {
-  type    = string
-  default = "10.2.0.0/16"
-}
+# variable "cluster_2_cidr" {
+#   type    = string
+#   default = "10.2.0.0/16"
+# }
 
 variable "cluster_1_name" {
   type    = string
@@ -41,25 +41,25 @@ variable "cluster_1_certificate_authority_data" {
 variable "cluster_1_token" {
   type = string
 }
-variable "cluster_2_endpoint" {
-  type = string
-}
+# variable "cluster_2_endpoint" {
+#   type = string
+# }
 
-variable "cluster_2_certificate_authority_data" {
-  type = string
-}
+# variable "cluster_2_certificate_authority_data" {
+#   type = string
+# }
 
-variable "cluster_2_token" {
-  type = string
-}
-variable "cluster_2_name" {
-  type    = string
-}
+# variable "cluster_2_token" {
+#   type = string
+# }
+# variable "cluster_2_name" {
+#   type    = string
+# }
 
-variable "cluster_2_region" {
-  type    = string
-  # default = "us-east-2"
-}
+# variable "cluster_2_region" {
+#   type    = string
+#   # default = "us-east-2"
+# }
 
 variable "requester_cidr" {
   type = string
@@ -70,18 +70,18 @@ variable "requester_vpc_id" {
 variable "requester_route" {
   type = string
 }
-variable "accepter_cidr" {
-  type = string
-}
-variable "accepter_vpc_id" {
-  type = string
-}
-variable "accepter_route" {
-  type = string
-}
+# variable "accepter_cidr" {
+#   type = string
+# }
+# variable "accepter_vpc_id" {
+#   type = string
+# }
+# variable "accepter_route" {
+#   type = string
+# }
 variable "cluster_1_gameservers_subnets" {
   type = list(any)
 }
-variable "cluster_2_gameservers_subnets" {
-  type = list(any)
-}
+# variable "cluster_2_gameservers_subnets" {
+#   type = list(any)
+# }

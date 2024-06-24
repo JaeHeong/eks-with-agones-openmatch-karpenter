@@ -65,53 +65,114 @@ func main() {
 	}
 	defer gzippedMapping1.Close()
 
-	gzippedMapping2, err := os.Open("/app/global-accelerator-mapping/mapping2.gz")
-	if err != nil {
-		log.Fatal(err)
-	}
-	defer gzippedMapping2.Close()
+	// gzippedMapping2, err := os.Open("/app/global-accelerator-mapping/mapping2.gz")
+	// if err != nil {
+	//     log.Fatal(err)
+	// }
+	// defer gzippedMapping2.Close()
 
 	acceleratorFile1, err := os.ReadFile("/app/global-accelerator-mapping/accelerator1")
 	if err != nil {
 		log.Fatal(err)
 	}
 	accelerator[regionsArr[0]] = string(acceleratorFile1)
-	acceleratorFile2, err := os.ReadFile("/app/global-accelerator-mapping/accelerator2")
+	// acceleratorFile2, err := os.ReadFile("/app/global-accelerator-mapping/accelerator2")
+	// if err != nil {
+	//     log.Fatal(err)
+	// }
+	// accelerator[regionsArr[1]] = string(acceleratorFile2)
+
+	mapping1Reader, err := gzip.NewReader(gzippedMapping1)
 	if err != nil {
 		log.Fatal(err)
 	}
-	accelerator[regionsArr[1]] = string(acceleratorFile2)
-
-	mapping1Reader, err := gzip.NewReader(gzippedMapping1)
 	defer mapping1Reader.Close()
 
-	mapping2Reader, err := gzip.NewReader(gzippedMapping2)
-	defer mapping2Reader.Close()
+	// mapping2Reader, err := gzip.NewReader(gzippedMapping2)
+	// if err != nil {
+	//     log.Fatal(err)
+	// }
+	// defer mapping2Reader.Close()
 
 	mapping1, err := io.ReadAll(mapping1Reader)
 	if err != nil {
 		panic(err)
 	}
-	mapping2, err := io.ReadAll(mapping2Reader)
-	if err != nil {
-		panic(err)
-	}
+	// mapping2, err := io.ReadAll(mapping2Reader)
+	// if err != nil {
+	//     panic(err)
+	// }
 	mappingJson := make(map[string]map[string]int)
-	var mapping1Json, mapping2Json map[string]int
+	var mapping1Json map[string]int
+	// var mapping2Json map[string]int
 	err = json.Unmarshal(mapping1, &mapping1Json)
 	if err != nil {
 		log.Fatal("Error during Unmarshal() mapping1: ", err)
 	}
 	mappingJson[regionsArr[0]] = mapping1Json
-	err = json.Unmarshal(mapping2, &mapping2Json)
-	if err != nil {
-		log.Fatal("Error during Unmarshal() mapping2: ", err)
-	}
-	mappingJson[regionsArr[1]] = mapping2Json
-	err = json.Unmarshal(mapping2, &mapping2Json)
-	if err != nil {
-		log.Fatal("Error during Unmarshal() mapping2: ", err)
-	}
+	// err = json.Unmarshal(mapping2, &mapping2Json)
+	// if err != nil {
+	//     log.Fatal("Error during Unmarshal() mapping2: ", err)
+	// }
+	// mappingJson[regionsArr[1]] = mapping2Json
+
+	// 기존꺼
+	// log.Printf("Opening files")
+
+	// 	gzippedMapping1, err := os.Open("/app/global-accelerator-mapping/mapping1.gz")
+	// 	if err != nil {
+	// 		log.Fatal(err)
+	// 	}
+	// 	defer gzippedMapping1.Close()
+
+	// 	// gzippedMapping2, err := os.Open("/app/global-accelerator-mapping/mapping2.gz")
+	// 	// if err != nil {
+	// 	// 	log.Fatal(err)
+	// 	// }
+	// 	// defer gzippedMapping2.Close()
+
+	// 	acceleratorFile1, err := os.ReadFile("/app/global-accelerator-mapping/accelerator1")
+	// 	if err != nil {
+	// 		log.Fatal(err)
+	// 	}
+	// 	accelerator[regionsArr[0]] = string(acceleratorFile1)
+	// 	// acceleratorFile2, err := os.ReadFile("/app/global-accelerator-mapping/accelerator2")
+	// 	// if err != nil {
+	// 	// 	log.Fatal(err)
+	// 	// }
+	// 	// accelerator[regionsArr[1]] = string(acceleratorFile2)
+
+	// 	mapping1Reader, err := gzip.NewReader(gzippedMapping1)
+	// 	defer mapping1Reader.Close()
+
+	// 	// mapping2Reader, err := gzip.NewReader(gzippedMapping2)
+	// 	// defer mapping2Reader.Close()
+
+	// 	mapping1, err := io.ReadAll(mapping1Reader)
+	// 	if err != nil {
+	// 		panic(err)
+	// 	}
+	// 	// mapping2, err := io.ReadAll(mapping2Reader)
+	// 	// if err != nil {
+	// 	// 	panic(err)
+	// 	// }
+	// 	mappingJson := make(map[string]map[string]int)
+	// 	var mapping1Json, mapping2Json map[string]int
+	// 	err = json.Unmarshal(mapping1, &mapping1Json)
+	// 	if err != nil {
+	// 		log.Fatal("Error during Unmarshal() mapping1: ", err)
+	// 	}
+	// 	mappingJson[regionsArr[0]] = mapping1Json
+	// 	err = json.Unmarshal(mapping2, &mapping2Json)
+	// 	if err != nil {
+	// 		log.Fatal("Error during Unmarshal() mapping2: ", err)
+	// 	}
+	// 	mappingJson[regionsArr[1]] = mapping2Json
+	// 	err = json.Unmarshal(mapping2, &mapping2Json)
+	// 	if err != nil {
+	// 		log.Fatal("Error during Unmarshal() mapping2: ", err)
+	// 	}
+	// 끝
 
 	// Connect to Open Match Backend.
 
