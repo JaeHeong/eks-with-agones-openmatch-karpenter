@@ -96,6 +96,11 @@ We will run terraform in three steps, following the `terraform` folder:
 2. terraform/intra-cluster: Deploys several components inside both clusters, using `helm` charts and `kubernetes` manifests.
 3. terraform/extra-cluster: Creates additional AWS resources outside the cluster, like ECR repositories, VPC peering and Global Accelerator infrastructures.
 
+<details>
+    <summary>자세히</summary>
+
+<!-- summary 아래 한칸 공백 두고 내용 삽입 -->
+
 ### Prepare terraform environment variables
 Define the names of our clusters and two different regions to run them. We can customize the clusters names, regions and VPC CIDR using the variables passed to the Terraform stack. In our examples we will be using `agones-gameservers-1` and `10.1.0.0/16` on region `us-east-1`, and `agones-gameservers-2` with `10.2.0.0/16` region `us-east-2`. Note that the CIDR of the VPCs should not overlap, since we will use VPC Peering to connect them.
 ```bash
@@ -147,7 +152,7 @@ terraform -chdir=terraform/intra-cluster apply -target="module.eks_blueprints_ad
  -var="namespaces=[\"agones-openmatch\", \"agones-system\", \"gameservers\", \"open-match\"]" \
  -var="configure_agones=true" \
  -var="configure_open_match=true" &&
-sleep 10 &&
+sleep 20 &&
 terraform -chdir=terraform/intra-cluster apply -auto-approve \
  -var="cluster_name=${CLUSTER1}" \
  -var="cluster_region=${REGION1}" \
@@ -172,7 +177,7 @@ terraform -chdir=terraform/intra-cluster apply -target="module.eks_blueprints_ad
  -var="namespaces=[\"agones-system\", \"gameservers\"]" \
  -var="configure_agones=true" \
  -var="configure_open_match=false" &&
-sleep 10 &&
+sleep 20 &&
 terraform -chdir=terraform/intra-cluster apply -auto-approve \
  -var="cluster_name=${CLUSTER2}" \
  -var="cluster_region=${REGION2}" \
@@ -227,6 +232,7 @@ terraform -chdir=terraform/extra-cluster apply -auto-approve \
  -var="cluster_2_region=${REGION2}"
 
 ```
+</details>
 After several minutes, Terraform should end with a mesage similar to this:
 ```bash
 Apply complete! Resources: XX added, YY changed, ZZ destroyed.

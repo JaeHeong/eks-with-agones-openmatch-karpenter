@@ -1,5 +1,9 @@
-
 # CIDR values must not overlap
+variable "multi_cluster" {
+  type    = bool
+  default = false
+}
+
 variable "cluster_1_cidr" {
   type    = string
   default = "10.1.0.0/16"
@@ -30,5 +34,5 @@ variable "open_match" {
 
 variable "cluster_version" {
   type    = string
-  default = "1.29"
+  default = "1.30"
 }

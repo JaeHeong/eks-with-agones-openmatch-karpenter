@@ -1,6 +1,11 @@
 
 ## Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
 ## SPDX-License-Identifier: MIT-0
+variable "multi_cluster" {
+  type    = bool
+  default = false
+}
+
 variable "ecr_region" {
   type    = string
   # default = "us-east-1"

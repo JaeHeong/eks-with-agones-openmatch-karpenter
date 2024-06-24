@@ -10,6 +10,7 @@ module "cluster1" {
 
 module "cluster2" {
  source         = "./modules/cluster"
+ 
  cluster_name   = var.cluster_2_name
  cluster_region = var.cluster_2_region
  cluster_cidr   = var.cluster_2_cidr
