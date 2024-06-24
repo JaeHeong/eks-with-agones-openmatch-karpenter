@@ -7,5 +7,4 @@ tempfile.json
 .terraform*
 terraform.tfstate*
 go.work*
-README.md
 .env
