@@ -102,6 +102,7 @@ We will run terraform in three steps, following the `terraform` folder:
 <!-- summary 아래 한칸 공백 두고 내용 삽입 -->
 
 ###
+- main.tf 클러스터 쪽 주석 해제
 - 클러스터 쪽 output 주석 해제
 
 ### Prepare terraform environment variables
@@ -253,6 +254,7 @@ Please, save the `global_accelerator_address` value, as we will use it later to 
 <!-- summary 아래 한칸 공백 두고 내용 삽입 -->
 
 ###
+- main.tf 클러스터 쪽 주석 처리
 - 클러스터 쪽 output 주석 처리
 
 ### Prepare terraform environment variables
@@ -323,15 +325,8 @@ terraform -chdir=terraform/extra-cluster init &&
 VPC1=$(terraform -chdir=terraform/cluster output -raw vpc_1_id) &&
 SUBNETS1=$(terraform -chdir=terraform/cluster output gameservers_1_subnets) &&
 ROUTE1=$(terraform -chdir=terraform/cluster output -raw private_route_table_1_id) &&
-ENDPOINT1=$(terraform -chdir=terraform/cluster output -raw cluster_2_endpoint) &&
 AUTH1=$(terraform -chdir=terraform/cluster output -raw cluster_1_certificate_authority_data) &&
 TOKEN1=$(terraform -chdir=terraform/cluster output -raw cluster_1_token) &&
-VPC2=$(terraform -chdir=terraform/cluster output -raw vpc_2_id) &&
-SUBNETS2=$(terraform -chdir=terraform/cluster output gameservers_2_subnets) &&
-ROUTE2=$(terraform -chdir=terraform/cluster output -raw private_route_table_2_id) &&
-ENDPOINT2=$(terraform -chdir=terraform/cluster output -raw cluster_2_endpoint) &&
-AUTH2=$(terraform -chdir=terraform/cluster output -raw cluster_2_certificate_authority_data) &&
-TOKEN2=$(terraform -chdir=terraform/cluster output -raw cluster_2_token) &&
 # Create resources  
 terraform -chdir=terraform/extra-cluster apply -auto-approve \
  -var="cluster_1_name=${CLUSTER1}" \
