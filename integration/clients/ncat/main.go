@@ -7,7 +7,6 @@ import (
 	"fmt"
 	"github.com/joho/godotenv"
 	"net"
-	"net/http"
 	"os"
 	"os/signal"
 	"strings"
@@ -85,13 +84,13 @@ func handleExit() {
 		} else {
 			fmt.Println("Successfully deleted ticket.")
 			// Send DELETE request to API
-			url := fmt.Sprintf("%s?user=%s", os.Getenv("DEL_URL"), user)
-			_, err := http.Post(url, "application/json", nil)
-			if err != nil {
-				fmt.Printf("Failed to send delete request: %v\n", err)
-			} else {
-				fmt.Println("Successfully sent delete request.")
-			}
+			// url := fmt.Sprintf("%s?user=%s", os.Getenv("DEL_URL"), user)
+			// _, err := http.Post(url, "application/json", nil)
+			// if err != nil {
+			// 	fmt.Printf("Failed to send delete request: %v\n", err)
+			// } else {
+			// 	fmt.Println("Successfully sent delete request.")
+			// }
 		}
 	}
 	os.Exit(0)
@@ -146,15 +145,15 @@ func main() {
 	serverPort = strings.Replace(serverPort, "\"", "", -1)
 	serverPort = strings.Replace(serverPort, "connection:", "", 1)
 
-	// Send POST request to API
-	url := fmt.Sprintf("%s?room=%s&region=%s&user=%s&server=%s", os.Getenv("SET_URL"), room, region, user, serverPort)
-	resp, err := http.Post(url, "application/json", nil)
-	if err != nil {
-		fmt.Printf("Failed to send request: %v\n", err)
-		return
-	}
-	defer resp.Body.Close()
-	fmt.Println("Successfully sent request to API.")
+	// // Send POST request to API
+	// url := fmt.Sprintf("%s?room=%s&region=%s&user=%s&server=%s", os.Getenv("SET_URL"), room, region, user, serverPort)
+	// resp, err := http.Post(url, "application/json", nil)
+	// if err != nil {
+	// 	fmt.Printf("Failed to send request: %v\n", err)
+	// 	return
+	// }
+	// defer resp.Body.Close()
+	// fmt.Println("Successfully sent request to API.")
 
 	ConnectGameServer(serverPort)
 

@@ -24,7 +24,7 @@ func main() {
 
 	// Since player tracking is not on by default, it is behind this flag.
 	// If it is off, still log messages about players, but don't actually call the player tracking functions.
-	enablePlayerTracking := flag.Bool("player-tracking", false, "If true, player tracking will be enabled.")
+	enablePlayerTracking := flag.Bool("player-tracking", true, "If true, player tracking will be enabled.")
 	flag.Parse()
 
 	log.Println("Connecting to Agones with the SDK")
@@ -34,7 +34,7 @@ func main() {
 	}
 
 	if *enablePlayerTracking {
-		if err = s.Alpha().SetPlayerCapacity(8); err != nil {
+		if err = s.Alpha().SetPlayerCapacity(2); err != nil {
 			log.Fatalf("could not set play count: %v", err)
 		}
 	}

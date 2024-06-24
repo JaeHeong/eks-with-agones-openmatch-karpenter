@@ -1,0 +1,49 @@
+## Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
+## SPDX-License-Identifier: MIT-0
+
+apiVersion: "agones.dev/v1"
+kind: Fleet
+metadata:
+  namespace: gameservers
+  name: ncat-pool1
+spec:
+  replicas: 1
+  strategy:
+   type: Recreate
+  template:
+    metadata:
+      labels:
+        pool: ONE
+        region: us-east-1
+    spec:
+      players:
+        # initialCapacity: 2 # 플레이어 수 제한을 10으로 설정
+      ports:
+      - name: default
+        protocol: TCP
+        containerPort: 12345
+      health:
+       initialDelaySeconds: 30
+       periodSeconds: 60
+      template:
+        spec:
+          nodeSelector:
+            intent: apps
+            karpenter.sh/capacity-type: spot
+          containers:
+          - name: ncat
+            args:
+            - -p
+            - "12345"
+            image: 058264399880.dkr.ecr.us-east-1.amazonaws.com/agones-openmatch-ncat-server
+            resources:
+              requests:
+                memory: "64Mi"
+                cpu: "20m"
+              limits:
+                memory: "64Mi"
+                cpu: "20m"
+            securityContext:                 
+              allowPrivilegeEscalation: false
+              runAsNonRoot: true
+                
