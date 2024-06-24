@@ -97,7 +97,7 @@ We will run terraform in three steps, following the `terraform` folder:
 3. terraform/extra-cluster: Creates additional AWS resources outside the cluster, like ECR repositories, VPC peering and Global Accelerator infrastructures.
 
 <details>
-    <summary>멀티 클러스터</summary>
+    <summary>멀티 클러스터 배포</summary>
 
 <!-- summary 아래 한칸 공백 두고 내용 삽입 -->
 
@@ -130,7 +130,8 @@ terraform -chdir=terraform/cluster apply -auto-approve \
  -var="cluster_2_name=${CLUSTER2}" \
  -var="cluster_2_region=${REGION2}" \
  -var="cluster_2_cidr=${CIDR2}" \
- -var="cluster_version=${VERSION}"
+ -var="cluster_version=${VERSION}"\
+ -var="multi_cluster=true"
 ```
 
 
@@ -229,8 +230,114 @@ terraform -chdir=terraform/extra-cluster apply -auto-approve \
  -var="cluster_2_token=${TOKEN2}" \
  -var="cluster_1_region=${REGION1}" \
  -var="ecr_region=${REGION1}" \
- -var="cluster_2_region=${REGION2}"
+ -var="cluster_2_region=${REGION2}"\
+ -var="multi_cluster=true"
+```
+After several minutes, Terraform should end with a mesage similar to this:
+```bash
+Apply complete! Resources: XX added, YY changed, ZZ destroyed.
 
+Outputs:
+global_accelerator_address = "abcdefgh123456789.awsglobalaccelerator.com"
+```
+
+Please, save the `global_accelerator_address` value, as we will use it later to connect to our game servers. In case we need to retrieve it, we can run `terraform -chdir=terraform/extra-cluster output`. 
+
+</details>
+<details>
+    <summary>싱글 클러스터 배포</summary>
+
+<!-- summary 아래 한칸 공백 두고 내용 삽입 -->
+
+### Prepare terraform environment variables
+Define the names of our clusters and two different regions to run them. We can customize the clusters names, regions and VPC CIDR using the variables passed to the Terraform stack. In our examples we will be using `agones-gameservers-1` and `10.1.0.0/16` on region `us-east-1`, and `agones-gameservers-2` with `10.2.0.0/16` region `us-east-2`. Note that the CIDR of the VPCs should not overlap, since we will use VPC Peering to connect them.
+```bash
+CLUSTER1=agones-gameservers-1
+REGION1=us-east-1
+CIDR1="10.1.0.0/16"
+VERSION="1.30"
+```
+
+For simplicity, we will be using local Terraform state files. In production workloads, we recommend storing the state files remotely, for example using the [S3 Terraform backend](https://developer.hashicorp.com/terraform/language/settings/backends/s3).
+
+
+### terraform/cluster
+
+Run the following commands to create EKS clusters, with the names and regions configured in the previous steps.
+```bash
+# Initialize Terraform
+terraform -chdir=terraform/cluster init &&
+# Create both clusters
+terraform -chdir=terraform/cluster apply -auto-approve \
+ -var="cluster_1_name=${CLUSTER1}" \
+ -var="cluster_1_region=${REGION1}" \
+ -var="cluster_1_cidr=${CIDR1}" \
+ -var="cluster_version=${VERSION}"
+```
+
+
+### terraform/intra-cluster
+The commands below will deploy our resources inside the clusters created in the last step. We use the output values from `terraform/cluster` as input to the `terraform/intra-cluster` module.
+```bash
+# Initialize Terraform
+terraform -chdir=terraform/intra-cluster init  &&
+# Deploy to the first cluster
+terraform -chdir=terraform/intra-cluster workspace select -or-create=true ${REGION1} &&
+terraform -chdir=terraform/intra-cluster apply -target="module.eks_blueprints_addons" -auto-approve \
+ -var="cluster_name=${CLUSTER1}" \
+ -var="cluster_region=${REGION1}" \
+ -var="cluster_endpoint=$(terraform -chdir=terraform/cluster output -raw cluster_1_endpoint)" \
+ -var="cluster_certificate_authority_data=$(terraform -chdir=terraform/cluster output -raw cluster_1_certificate_authority_data)" \
+ -var="cluster_token=$(terraform -chdir=terraform/cluster output -raw cluster_1_token)" \
+ -var="cluster_version=${VERSION}" \
+ -var="oidc_provider_arn=$(terraform -chdir=terraform/cluster output -raw oidc_provider_1_arn)" \
+ -var="namespaces=[\"agones-openmatch\", \"agones-system\", \"gameservers\", \"open-match\"]" \
+ -var="configure_agones=true" \
+ -var="configure_open_match=true" &&
+sleep 20 &&
+terraform -chdir=terraform/intra-cluster apply -auto-approve \
+ -var="cluster_name=${CLUSTER1}" \
+ -var="cluster_region=${REGION1}" \
+ -var="cluster_endpoint=$(terraform -chdir=terraform/cluster output -raw cluster_1_endpoint)" \
+ -var="cluster_certificate_authority_data=$(terraform -chdir=terraform/cluster output -raw cluster_1_certificate_authority_data)" \
+ -var="cluster_token=$(terraform -chdir=terraform/cluster output -raw cluster_1_token)" \
+ -var="cluster_version=${VERSION}" \
+ -var="oidc_provider_arn=$(terraform -chdir=terraform/cluster output -raw oidc_provider_1_arn)" \
+ -var="namespaces=[\"agones-openmatch\", \"agones-system\", \"gameservers\", \"open-match\"]" \
+ -var="configure_agones=true" \
+ -var="configure_open_match=true"
+```
+
+### terraform/extra-cluster
+Here we deploy the external components to our infrastructure, and configure resources that need both clusters to deploy, such as VPC Peering and Agones multi-cluster allocation.
+```bash
+# Initialize Terraform
+terraform -chdir=terraform/extra-cluster init &&
+# Get the values needed by Terraform
+VPC1=$(terraform -chdir=terraform/cluster output -raw vpc_1_id) &&
+SUBNETS1=$(terraform -chdir=terraform/cluster output gameservers_1_subnets) &&
+ROUTE1=$(terraform -chdir=terraform/cluster output -raw private_route_table_1_id) &&
+ENDPOINT1=$(terraform -chdir=terraform/cluster output -raw cluster_2_endpoint) &&
+AUTH1=$(terraform -chdir=terraform/cluster output -raw cluster_1_certificate_authority_data) &&
+TOKEN1=$(terraform -chdir=terraform/cluster output -raw cluster_1_token) &&
+VPC2=$(terraform -chdir=terraform/cluster output -raw vpc_2_id) &&
+SUBNETS2=$(terraform -chdir=terraform/cluster output gameservers_2_subnets) &&
+ROUTE2=$(terraform -chdir=terraform/cluster output -raw private_route_table_2_id) &&
+ENDPOINT2=$(terraform -chdir=terraform/cluster output -raw cluster_2_endpoint) &&
+AUTH2=$(terraform -chdir=terraform/cluster output -raw cluster_2_certificate_authority_data) &&
+TOKEN2=$(terraform -chdir=terraform/cluster output -raw cluster_2_token) &&
+# Create resources  
+terraform -chdir=terraform/extra-cluster apply -auto-approve \
+ -var="cluster_1_name=${CLUSTER1}" \
+ -var="requester_cidr=${CIDR1}" \
+ -var="requester_vpc_id=${VPC1}" \
+ -var="requester_route=${ROUTE1}" \
+ -var="cluster_1_gameservers_subnets=${SUBNETS1}" \
+ -var="cluster_1_endpoint=${ENDPOINT1}" \
+ -var="cluster_1_certificate_authority_data=${AUTH1}" \
+ -var="cluster_1_token=${TOKEN1}" \
+ -var="cluster_1_region=${REGION1}" \
+ -var="ecr_region=${REGION1}"
 ```
 After several minutes, Terraform should end with a mesage similar to this:
 ```bash
@@ -505,6 +612,8 @@ REGION2=us-east-2
 export GOPROXY=direct
 global_accelerator_address=$(terraform -chdir=../../../terraform/extra-cluster output | cut -d "=" -f 2 | cut -d "\"" -f 2)
 go run main.go -frontend $global_accelerator_address:50504 -region1 $REGION1 -region2 $REGION2
+
+go run main.go -frontend $global_accelerator_address:50504 -region us-east-1  -user user1 -room 123
 ```
 
 >YYYY/MM/DD hh:mm:ss Connecting to Open Match Frontend
@@ -555,6 +664,10 @@ We can use the fleets in the [fleets/stk/](fleets/stk/) folder and the client in
 
 ## Clean Up Resources
 
+<details>
+    <summary>멀티 클러스터 정리</summary>
+
+<!-- summary 아래 한칸 공백 두고 내용 삽입 -->
 
 - Destroy the extra clusters components
     ```bash
@@ -661,6 +774,89 @@ We can use the fleets in the [fleets/stk/](fleets/stk/) folder and the client in
     ```bash
     rm -f *.crt *.key integration/clients/stk/*.cert integration/clients/stk/*.key integration/clients/ncat/*.cert integration/clients/ncat/*.key
     ```
+</details>
+<details>
+    <summary>싱글 클러스터 정리</summary>
+
+<!-- summary 아래 한칸 공백 두고 내용 삽입 -->
+
+- Destroy the extra clusters components
+    ```bash
+    terraform -chdir=terraform/extra-cluster destroy -auto-approve \
+     -var="requester_cidr=${CIDR1}" \
+     -var="requester_vpc_id=${VPC1}" \
+     -var="requester_route=${ROUTE1}" \
+     -var="cluster_1_name=${CLUSTER1}" \
+     -var="cluster_1_gameservers_subnets=${SUBNETS1}" \
+     -var="cluster_1_endpoint=${ENDPOINT1}" \
+     -var="cluster_1_certificate_authority_data=${AUTH1}" \
+     -var="cluster_1_token=${TOKEN1}" \
+     -var="cluster_1_region=${REGION1}" \
+     -var="ecr_region=${REGION1}"
+    ``` 
+
+- Delete the Load Balancers and Security Groups
+    ```bash
+    aws elbv2 delete-load-balancer --region ${REGION1} --load-balancer-arn $(aws elbv2 describe-load-balancers --region ${REGION1} --query "LoadBalancers[?contains(LoadBalancerName,'${CLUSTER1}-om-fe')].LoadBalancerArn"  --output text)
+    aws elbv2 delete-load-balancer --region ${REGION1} --load-balancer-arn $(aws elbv2 describe-load-balancers --region ${REGION1} --query "LoadBalancers[?contains(LoadBalancerName,'${CLUSTER1}-allocator')].LoadBalancerArn"  --output text)
+    aws elbv2 delete-load-balancer --region ${REGION1} --load-balancer-arn $(aws elbv2 describe-load-balancers --region ${REGION1} --query "LoadBalancers[?contains(LoadBalancerName,'${CLUSTER1}-ping-http')].LoadBalancerArn"  --output text)
+    aws elbv2 delete-load-balancer --region ${REGION1} --load-balancer-arn $(aws elbv2 describe-load-balancers --region ${REGION1} --query "LoadBalancers[?contains(LoadBalancerName,'${CLUSTER1}-ping-udp')].LoadBalancerArn"  --output text)
+    aws elbv2 delete-load-balancer --region ${REGION2} --load-balancer-arn $(aws elbv2 describe-load-balancers --region ${REGION2} --query "LoadBalancers[?contains(LoadBalancerName,'${CLUSTER2}-allocator')].LoadBalancerArn"  --output text)
+    aws elbv2 delete-load-balancer --region ${REGION2} --load-balancer-arn $(aws elbv2 describe-load-balancers --region ${REGION2} --query "LoadBalancers[?contains(LoadBalancerName,'${CLUSTER2}-ping-http')].LoadBalancerArn"  --output text)
+    aws elbv2 delete-load-balancer --region ${REGION2} --load-balancer-arn $(aws elbv2 describe-load-balancers --region ${REGION2} --query "LoadBalancers[?contains(LoadBalancerName,'${CLUSTER2}-ping-udp')].LoadBalancerArn"  --output text)
+    ```
+
+- Discard or destroy the internal cluster components
+    If we are removing all the components of the solution, it's quicker to simply discard the Terraform state of the intra-cluster folder, since we will destroy the clusters in the next step, and this will automatically remove the intra-cluster components. 
+    ```bash
+    terraform -chdir=terraform/intra-cluster workspace select ${REGION1}
+    terraform -chdir=terraform/intra-cluster state list | cut -f 1 -d '[' | xargs -L 1 terraform -chdir=terraform/intra-cluster state rm
+    terraform -chdir=terraform/intra-cluster workspace select ${REGION2}
+    terraform -chdir=terraform/intra-cluster state list | cut -f 1 -d '[' | xargs -L 1 terraform -chdir=terraform/intra-cluster state rm
+    ``` 
+    If we prefer to destroy the components in this stage (for example, to keep the clusters created by terraform/cluster and test terraform-intra clusters with other values and configurations), use the code below instead.
+
+    ```bash
+
+    # Destroy the resources inside the first cluster
+    terraform -chdir=terraform/intra-cluster workspace select ${REGION1}
+    terraform -chdir=terraform/intra-cluster destroy -auto-approve \
+    -var="cluster_name=${CLUSTER1}" \
+    -var="cluster_region=${REGION1}" \
+    -var="cluster_endpoint=$(terraform -chdir=terraform/cluster output -raw cluster_1_endpoint)" \
+    -var="cluster_certificate_authority_data=$(terraform -chdir=terraform/cluster output -raw cluster_1_certificate_authority_data)" \
+    -var="cluster_token=$(terraform -chdir=terraform/cluster output -raw cluster_1_token)" \
+    -var="cluster_version=${VERSION}" \
+    -var="oidc_provider_arn=$(terraform -chdir=terraform/cluster output -raw oidc_provider_1_arn)" \
+    -var="namespaces=[\"agones-openmatch\", \"agones-system\", \"gameservers\", \"open-match\"]" \
+    -var="configure_agones=true" \
+    -var="configure_open_match=true"
+    ``` 
+- Destroy the clusters
+    ```bash
+    # Destroy both clusters
+    terraform -chdir=terraform/cluster destroy -auto-approve \
+    -var="cluster_1_name=${CLUSTER1}" \
+    -var="cluster_1_region=${REGION1}" \
+    -var="cluster_1_cidr=${CIDR1}" \
+    -var="cluster_version=${VERSION}"
+    ``` 
+    **Note:** if the `terraform destroy` command fails to destroy the subnets or the VPCs, run the commands
+    ```bash
+    for sg in $(aws ec2 describe-security-groups --region ${REGION1} --filters "Name=vpc-id,Values=$(aws ec2  describe-vpcs --region ${REGION1} --filters "Name=tag:Name,Values='${CLUSTER1}'" --query Vpcs[].VpcId --output text)" --query SecurityGroups[].GroupId --output text); do aws ec2 delete-security-group --region ${REGION1} --group-id $sg ; done
+    ```
+    and run the `terraform destroy` command again.
+
+
+- Remove the clusters from kubectl config
+    ```bash
+    kubectl config delete-context $(kubectl config get-contexts -o=name | grep ${CLUSTER1})
+    ```
+- Remove the local certificate files
+    ```bash
+    rm -f *.crt *.key integration/clients/stk/*.cert integration/clients/stk/*.key integration/clients/ncat/*.cert integration/clients/ncat/*.key
+    ```
+</details>
 
 # Security recommendations
 [This page](./security.md) provides suggestions of actions that should be taken to make the solution more secure acording to AWS best practices.
