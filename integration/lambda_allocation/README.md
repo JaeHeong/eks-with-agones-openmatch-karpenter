@@ -19,5 +19,6 @@ aws lambda create-function --function-name get_server \
 --runtime provided.al2023 --handler bootstrap \
 --architectures arm64 \
 --role arn:aws:iam::xxxxxx:role/service-role/xxxxxx \
---zip-file fileb://myFunction.zip
+--zip-file fileb://myFunction.zip \
+--timeout 30
 ```
