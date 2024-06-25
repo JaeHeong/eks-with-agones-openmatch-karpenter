@@ -1,4 +1,4 @@
-# Guidance for Game Server Hosting on Amazon EKS with Agones and Open Match
+# Guidance for Game Server Hosting on Amazon EKS with Agones and Open Match + Karpenter
 ## Modified by JaeHyeong
 
 - [Introduction](#introduction)
