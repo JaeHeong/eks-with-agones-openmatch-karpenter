@@ -874,3 +874,4 @@ We can use the fleets in the [fleets/stk/](fleets/stk/) folder and the client in
 
 # Reference
 - https://community.aws/content/2dhlDEUfwElQ9mhtOP6D8YJbULA/run-kubernetes-clusters-for-less-with-amazon-ec2-spot-and-karpenter#step-6-optional-simulate-spot-interruption
+- https://github.com/aws-solutions-library-samples/guidance-for-game-server-hosting-using-agones-and-open-match-on-amazon-eks
