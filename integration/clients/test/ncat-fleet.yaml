@@ -7,7 +7,7 @@ metadata:
   namespace: gameservers
   name: ncat-pool1
 spec:
-  replicas: 2
+  replicas: 60
   strategy:
    type: Recreate
   template:
