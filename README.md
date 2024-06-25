@@ -107,6 +107,7 @@ We will run terraform in three steps, following the `terraform` folder:
 - extra main.tf랑 변수 주석 해제
 - extra main.tf 맨 밑에 null_resource 수정
 - director main.tf에서 글로벌엑셀러레이터 매핑 부분 수정
+- director main.go 309번줄 Enabled: multicluster,
 
 ### Prepare terraform environment variables
 Define the names of our clusters and two different regions to run them. We can customize the clusters names, regions and VPC CIDR using the variables passed to the Terraform stack. In our examples we will be using `agones-gameservers-1` and `10.1.0.0/16` on region `us-east-1`, and `agones-gameservers-2` with `10.2.0.0/16` region `us-east-2`. Note that the CIDR of the VPCs should not overlap, since we will use VPC Peering to connect them.
@@ -261,7 +262,8 @@ Please, save the `global_accelerator_address` value, as we will use it later to 
 - 클러스터 쪽 output 주석 처리
 - extra main.tf랑 변수 주석 처리
 - extra main.tf 맨 밑에 null_resource 수정
-- director main.tf에서 글로벌엑셀러레이터 매핑 부분 수정
+- director main.go에서 글로벌엑셀러레이터 매핑 부분 수정
+- director main.go 309번줄 Enabled: multicluster,
 
 ### Prepare terraform environment variables
 Define the names of our clusters and two different regions to run them. We can customize the clusters names, regions and VPC CIDR using the variables passed to the Terraform stack. In our examples we will be using `agones-gameservers-1` and `10.1.0.0/16` on region `us-east-1`, and `agones-gameservers-2` with `10.2.0.0/16` region `us-east-2`. Note that the CIDR of the VPCs should not overlap, since we will use VPC Peering to connect them.

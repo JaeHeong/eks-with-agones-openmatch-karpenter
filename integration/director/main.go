@@ -306,7 +306,8 @@ func getAllocation(matchId string) *pba.AllocationResponse {
 	request := &pba.AllocationRequest{
 		Namespace: namespace,
 		MultiClusterSetting: &pba.MultiClusterSetting{
-			Enabled: multicluster,
+			// Enabled: multicluster,
+			Enabled: false,
 		},
 		GameServerSelectors: []*pba.GameServerSelector{
 			{

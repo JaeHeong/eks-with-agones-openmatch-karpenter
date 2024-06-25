@@ -4,7 +4,7 @@ export NAMESPACE=agones-openmatch
 export CLUSTER_NAME=$1
 # We need both regions for the director deployment parameters
 export REGION1=$2
-# export REGION2=$3
+export REGION2=$3
 export ACCOUNT_ID=$(aws sts get-caller-identity --query "Account" --output text)
 export REGISTRY=${ACCOUNT_ID}.dkr.ecr.${REGION1}.amazonaws.com
 

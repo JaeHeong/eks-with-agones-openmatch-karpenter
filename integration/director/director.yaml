@@ -74,7 +74,7 @@ spec:
         - name: CA_FILE
           value: ca.crt
         - name: NAMESPACE
-          value: agones-system
+          value: gameservers
         - name: REGIONS
           value: ${REGION1},${REGION2}
         - name: INTERVAL
