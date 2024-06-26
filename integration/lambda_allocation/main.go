@@ -6,7 +6,9 @@ import (
 	"crypto/x509"
 	"fmt"
 	"log"
+	"math/rand"
 	"os"
+	"time"
 
 	"github.com/google/uuid"
 	"github.com/pkg/errors"
@@ -29,6 +31,7 @@ type MyResponse struct {
 	TicketID   string `json:"ticketID"`
 	Connection string `json:"connection"`
 	Message    string `json:"message"`
+	Title      string `json:"title"`
 }
 
 type MatchRequest struct {
@@ -165,18 +168,22 @@ func HandleLambdaEvent(event *MyEvent) (*MyResponse, error) {
 		return &MyResponse{Message: "OM_FRONTEND_ENDPOINT environment variable is not set"}, nil
 	}
 
+	titleList := []string{"고우영 바보", "고우영 천재", "고우영 멍청이", "고영욱"}
+	rand.Seed(time.Now().UnixNano())
+	randomTitle := titleList[rand.Intn(len(titleList))]
+
 	if event.TicketID != "" {
 		message, err := DeleteTicket(omFrontendEndpoint, event.TicketID)
 		if err != nil {
 			return &MyResponse{Message: fmt.Sprintf("Error: %v", err)}, nil
 		}
-		return &MyResponse{Message: message}, nil
+		return &MyResponse{Message: message, Title: randomTitle}, nil
 	} else {
 		ticketID, connection, err := GetServerAssignment(omFrontendEndpoint, event.Room, event.Region)
 		if err != nil {
-			return &MyResponse{Message: fmt.Sprintf("Error: %v", err)}, nil
+			return &MyResponse{Message: fmt.Sprintf("Error: %v", err), Title: randomTitle}, nil
 		}
-		return &MyResponse{TicketID: ticketID, Connection: connection, Message: "Assignment successful"}, nil
+		return &MyResponse{TicketID: ticketID, Connection: connection, Title: randomTitle, Message: "Assignment successful"}, nil
 	}
 }
 
