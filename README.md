@@ -1,3 +1,4 @@
+- 메모: delete_list_vpc로 구성한거 iam 권한 추가 해줘야 함
 # Guidance for Game Server Hosting on Amazon EKS with Agones and Open Match + Karpenter
 ## Modified by JaeHyeong
 
