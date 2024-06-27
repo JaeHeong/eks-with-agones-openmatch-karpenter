@@ -82,6 +82,14 @@ module "lambda" {
   }
 }
 
+# resource "null_resource" "put_dynamodb_policy" {
+#   provisioner "local-exec" {
+#     command = <<EOT
+# aws dynamodb put-resource-policy --resource-arn ${aws_dynamodb_table.server_list.arn} --policy "{\\"Version\\": \\"2012-10-17\\", \\"Statement\\": [{\\"Effect\\": \\"Allow\\", \\"Principal\\": {\\"AWS\\": \\"${module.iam.lambda_execution_role_arn}\\"}, \\"Action\\": \\"dynamodb:*\\" , \\"Resource\\": \\"${aws_dynamodb_table.server_list.arn}\\"}]}"
+#     EOT
+#   }
+# }
+
 output "api_id" {
   value = module.api_gateway.api_id
 }
