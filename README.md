@@ -451,7 +451,7 @@ spec:
           values: ["spot"]
         - key: karpenter.k8s.aws/instance-category
           operator: In
-          values: ["c", "m", "r", "t"] # add type T
+          values: ["c", "m", "r"] # add type T
       nodeClassRef:
         apiVersion: karpenter.k8s.aws/v1beta1
         kind: EC2NodeClass
@@ -516,7 +516,7 @@ spec:
           values: ["spot"]
         - key: karpenter.k8s.aws/instance-category
           operator: In
-          values: ["c", "m", "r", "t"] # add type T
+          values: ["c", "m", "r"] # add type T
       nodeClassRef:
         apiVersion: karpenter.k8s.aws/v1beta1
         kind: EC2NodeClass
