@@ -3,10 +3,8 @@ variable "lambda_functions" {
   type = map(object({
     handler     = string
     runtime     = string
-    role        = string
     environment = map(string)
     memory_size = number
-    timeout     = number
     s3_key      = string
   }))
 }
@@ -23,5 +21,20 @@ variable "table_name" {
 
 variable "om_frontend_endpoint" {
   description = "OM Frontend Endpoint"
+  type        = string
+}
+
+variable "lambda_execution_role_arn" {
+  description = "IAM role ARN for Lambda execution"
+  type        = string
+}
+
+variable "region" {
+  description = "AWS region"
+  type        = string
+}
+
+variable "api_gateway_id" {
+  description = "API Gateway ID"
   type        = string
 }

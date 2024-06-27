@@ -27,3 +27,7 @@ output "set_list_resource_id" {
   description = "The resource ID for /set-list"
   value       = aws_api_gateway_resource.set_list.id
 }
+
+output "api_id" {
+  value = aws_api_gateway_rest_api.this.id
+}
