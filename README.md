@@ -793,6 +793,10 @@ We can use the fleets in the [fleets/stk/](fleets/stk/) folder and the client in
     ```bash
     rm -f *.crt *.key integration/clients/stk/*.cert integration/clients/stk/*.key integration/clients/ncat/*.cert integration/clients/ncat/*.key
     ```
+
+### terraform/etc
+terraform/etc => terraform destroy
+
 </details>
 <details>
     <summary>싱글 클러스터 정리</summary>
@@ -875,6 +879,10 @@ We can use the fleets in the [fleets/stk/](fleets/stk/) folder and the client in
     ```bash
     rm -f *.crt *.key integration/clients/stk/*.cert integration/clients/stk/*.key integration/clients/ncat/*.cert integration/clients/ncat/*.key
     ```
+
+### terraform/etc
+terraform/etc => terraform destroy
+
 </details>
 
 # Security recommendations
