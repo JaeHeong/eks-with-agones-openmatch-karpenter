@@ -1,4 +1,4 @@
-- 메모: delete_list_vpc로 구성한거 iam 권한 추가 해줘야 함
+- 메모: delete_list_vpc로 구성한거 iam 권한 추가 해줘야 함 (delete_list_vpc람다도 생성해야 함, 서브넷은 하나만 부착해도 될 듯?)
 - 람다 VPC 구성도 해야 함
 # Guidance for Game Server Hosting on Amazon EKS with Agones and Open Match + Karpenter
 ## Modified by JaeHyeong
