@@ -28,6 +28,30 @@ resource "aws_dynamodb_table" "server_list" {
   }
 }
 
+resource "aws_dynamodb_resource_policy" "lambda_execution_policy" {
+  resource_arn = aws_dynamodb_table.server_list.arn
+  policy       = <<EOF
+  {
+    "Version" : "2012-10-17",
+    "Statement" : [
+      {
+        "Sid" : "Statement1",
+        "Effect" : "Allow",
+        "Principal" : {
+          "AWS" : [
+            "${module.iam.lambda_execution_role_arn}"
+          ]
+        },
+        "Action" : "dynamodb:*",
+        "Resource" : "${aws_dynamodb_table.server_list.arn}"
+      }
+    ]
+  }
+  EOF
+
+  depends_on = [aws_dynamodb_table.server_list]
+}
+
 module "iam" {
   source = "./modules/iam"
 }
@@ -43,9 +67,9 @@ module "api_gateway" {
 module "lambda" {
   source = "./modules/lambda"
 
-  s3_bucket                 = "test-lambda-kjh-2"
+  s3_bucket                 = var.s3_bucket
   table_name                = aws_dynamodb_table.server_list.name
-  om_frontend_endpoint      = "a405f901866348e8e.awsglobalaccelerator.com:50504"
+  om_frontend_endpoint      = var.om_frontend_endpoint
   lambda_execution_role_arn = module.iam.lambda_execution_role_arn
   region                    = var.region
   api_gateway_id            = module.api_gateway.api_id
@@ -56,39 +80,31 @@ module "lambda" {
       runtime     = "python3.9"
       environment = {}
       memory_size = 128
-      s3_key      = "get_list.zip"
+      s3_key      = var.get_list_lambda_s3_key
     }
     get_server = {
       handler     = "bootstrap"
       runtime     = "provided.al2023"
       environment = {}
       memory_size = 128
-      s3_key      = "get_server.zip"
+      s3_key      = var.get_server_lambda_s3_key
     }
     get_server_from_list = {
       handler     = "lambda_function.lambda_handler"
       runtime     = "python3.9"
       environment = {}
       memory_size = 128
-      s3_key      = "get_server_from_list.zip"
+      s3_key      = var.get_server_from_list_lambda_s3_key
     }
     set_list = {
       handler     = "lambda_function.lambda_handler"
       runtime     = "python3.9"
       environment = {}
       memory_size = 128
-      s3_key      = "set_list.zip"
+      s3_key      = var.set_list_lambda_s3_key
     }
   }
 }
-
-# resource "null_resource" "put_dynamodb_policy" {
-#   provisioner "local-exec" {
-#     command = <<EOT
-# powershell.exe -ExecutionPolicy Bypass -File ./apply_policy.ps1 -dynamodbArn "${aws_dynamodb_table.server_list.arn}" -roleArn "${module.iam.lambda_execution_role_arn}"
-# EOT
-#   }
-# }
 
 output "api_id" {
   value = module.api_gateway.api_id
