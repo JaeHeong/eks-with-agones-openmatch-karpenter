@@ -253,6 +253,9 @@ global_accelerator_address = "abcdefgh123456789.awsglobalaccelerator.com"
 
 Please, save the `global_accelerator_address` value, as we will use it later to connect to our game servers. In case we need to retrieve it, we can run `terraform -chdir=terraform/extra-cluster output`. 
 
+### terraform/etc
+terraform/etc => terraform apply
+
 </details>
 <details>
     <summary>싱글 클러스터 배포</summary>
@@ -359,6 +362,9 @@ global_accelerator_address = "abcdefgh123456789.awsglobalaccelerator.com"
 ```
 
 Please, save the `global_accelerator_address` value, as we will use it later to connect to our game servers. In case we need to retrieve it, we can run `terraform -chdir=terraform/extra-cluster output`. 
+
+### terraform/etc
+terraform/etc => terraform apply
 
 </details>
 
