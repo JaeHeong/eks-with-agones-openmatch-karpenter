@@ -7,13 +7,13 @@ variable "region" {
 variable "om_frontend_endpoint" {
   description = "Open Match frontend endpoint address"
   type        = string
-  default     = "a405f901866348e8e.awsglobalaccelerator.com:50504"
+  default     = "ab6dbbbe92362c8c1.awsglobalaccelerator.com:50504"
 }
 
 variable "s3_bucket" {
   description = "lambda s3 bucket name"
   type        = string
-  default     = "test-lambda-kjh"
+  default     = "deadly-trick-lambda"
 }
 
 // lambda s3 key
