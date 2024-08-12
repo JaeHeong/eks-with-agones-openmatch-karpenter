@@ -113,9 +113,9 @@ module "eks" {
       labels = {
         intent = "control-apps"
       }
-      min_size     = !var.open_match ? var.agones_openmatch_min_size : 0
-      max_size     = !var.open_match ? var.agones_openmatch_max_size : 1 # max_size can't be zero
-      desired_size = !var.open_match ? var.agones_openmatch_desired_size : 0
+      min_size     = var.open_match ? var.agones_openmatch_min_size : 0
+      max_size     = var.open_match ? var.agones_openmatch_max_size : 1 # max_size can't be zero
+      desired_size = var.open_match ? var.agones_openmatch_desired_size : 0
 
       subnet_ids = slice(module.vpc.private_subnets, 0, 3)
     }
