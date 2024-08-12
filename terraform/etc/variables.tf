@@ -7,7 +7,7 @@ variable "region" {
 variable "om_frontend_endpoint" {
   description = "Open Match frontend endpoint address"
   type        = string
-  default     = "ab6dbbbe92362c8c1.awsglobalaccelerator.com:50504"
+  default     = "a5ebd658ba305e506.awsglobalaccelerator.com:50504"
 }
 
 variable "s3_bucket" {
