@@ -18,7 +18,7 @@ variable "cluster_version" {
 }
 variable "gameservers_instance_types" {
   type    = list(any)
-  default = ["m5.large"]
+  default = ["m5a.large", "m5zn.large", "m6id.large", "m5ad.large"]
 }
 
 variable "gameservers_min_size" {
@@ -38,7 +38,7 @@ variable "gameservers_desired_size" {
 
 variable "agones_system_instance_types" {
   type    = list(any)
-  default = ["m5.large"]
+  default = ["m5a.large", "m5zn.large", "m6id.large", "m5ad.large"]
 }
 
 variable "agones_system_min_size" {
@@ -58,7 +58,7 @@ variable "agones_system_desired_size" {
 
 variable "agones_metrics_instance_types" {
   type    = list(any)
-  default = ["m5.large"]
+  default = ["m5a.large", "m5zn.large", "m6id.large", "m5ad.large"]
 }
 
 variable "agones_metrics_min_size" {
@@ -78,7 +78,7 @@ variable "agones_metrics_desired_size" {
 
 variable "open_match_instance_types" {
   type    = list(any)
-  default = ["m5.large"]
+  default = ["m5a.large", "m5zn.large", "m6id.large", "m5ad.large"]
 }
 
 variable "open_match_min_size" {
@@ -98,7 +98,7 @@ variable "open_match_desired_size" {
 
 variable "agones_openmatch_instance_types" {
   type    = list(any)
-  default = ["m5.large"]
+  default = ["m5a.large", "m5zn.large", "m6id.large", "m5ad.large"]
 }
 
 variable "agones_openmatch_min_size" {

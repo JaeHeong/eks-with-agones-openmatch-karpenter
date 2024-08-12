@@ -40,6 +40,7 @@ module "eks" {
   eks_managed_node_groups = {
     agones_system = {
       capacity_type  = "SPOT"
+      disk_size      = 30
       instance_types = var.agones_system_instance_types
       labels = {
         "agones.dev/agones-system" = true
@@ -60,6 +61,7 @@ module "eks" {
 
     agones_metrics = {
       capacity_type  = "SPOT"
+      disk_size      = 30
       instance_types = var.agones_metrics_instance_types
       labels = {
         "agones.dev/agones-metrics" = true
@@ -81,6 +83,7 @@ module "eks" {
 
     open_match = {
       capacity_type  = "SPOT"
+      disk_size      = 30
       instance_types = var.open_match_instance_types
       labels = {
         "openmatch" = "system"
@@ -95,6 +98,7 @@ module "eks" {
 
     agones_openmatch = {
       capacity_type  = "SPOT"
+      disk_size      = 30
       instance_types = var.agones_openmatch_instance_types
       labels = {
         "openmatch" = "customization"
@@ -109,6 +113,7 @@ module "eks" {
 
     default_system = {
       capacity_type  = "SPOT"
+      disk_size      = 30
       instance_types = var.agones_openmatch_instance_types
       labels = {
         intent = "control-apps"
