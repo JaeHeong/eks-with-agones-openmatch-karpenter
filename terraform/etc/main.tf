@@ -5,7 +5,7 @@ provider "aws" {
 data "aws_caller_identity" "current" {}
 
 resource "aws_dynamodb_table" "server_list" {
-  name         = "server_list"
+  name         = "deadly_trick_server_list"
   billing_mode = "PAY_PER_REQUEST"
   hash_key     = "Room"
 
@@ -59,7 +59,7 @@ module "iam" {
 module "api_gateway" {
   source = "./modules/api_gateway"
 
-  api_name           = "manager"
+  api_name           = "deadlytrick"
   api_description    = ""
   lambda_invoke_arns = module.lambda.lambda_invoke_arns
 }
