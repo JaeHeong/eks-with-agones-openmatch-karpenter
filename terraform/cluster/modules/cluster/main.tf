@@ -39,10 +39,11 @@ module "eks" {
 
   eks_managed_node_groups = {
     agones_system = {
+      capacity_type  = "SPOT"
       instance_types = var.agones_system_instance_types
       labels = {
         "agones.dev/agones-system" = true
-        intent                      = "control-apps"
+        intent                     = "control-apps"
       }
       taints = {
         dedicated = {
@@ -54,11 +55,11 @@ module "eks" {
       min_size     = var.agones_system_min_size
       max_size     = var.agones_system_max_size
       desired_size = var.agones_system_desired_size
-
-      subnet_ids = slice(module.vpc.private_subnets, 0, 3)
+      subnet_ids   = slice(module.vpc.private_subnets, 0, 3)
     }
-    
+
     agones_metrics = {
+      capacity_type  = "SPOT"
       instance_types = var.agones_metrics_instance_types
       labels = {
         "agones.dev/agones-metrics" = true
@@ -79,10 +80,11 @@ module "eks" {
     }
 
     open_match = {
+      capacity_type  = "SPOT"
       instance_types = var.open_match_instance_types
       labels = {
         "openmatch" = "system"
-        intent                      = "control-apps"
+        intent      = "control-apps"
       }
       min_size     = var.open_match ? var.open_match_min_size : 0
       max_size     = var.open_match ? var.open_match_max_size : 1 # max_size can't be zero
@@ -90,12 +92,13 @@ module "eks" {
 
       subnet_ids = slice(module.vpc.private_subnets, 0, 3)
     }
-    
+
     agones_openmatch = {
+      capacity_type  = "SPOT"
       instance_types = var.agones_openmatch_instance_types
       labels = {
         "openmatch" = "customization"
-        intent                      = "control-apps"
+        intent      = "control-apps"
       }
       min_size     = var.open_match ? var.agones_openmatch_min_size : 0
       max_size     = var.open_match ? var.agones_openmatch_max_size : 1 # max_size can't be zero
@@ -103,11 +106,12 @@ module "eks" {
 
       subnet_ids = slice(module.vpc.private_subnets, 0, 3)
     }
-    
+
     default_system = {
+      capacity_type  = "SPOT"
       instance_types = var.agones_openmatch_instance_types
       labels = {
-        intent                      = "control-apps"
+        intent = "control-apps"
       }
       min_size     = !var.open_match ? var.agones_openmatch_min_size : 0
       max_size     = !var.open_match ? var.agones_openmatch_max_size : 1 # max_size can't be zero
@@ -151,11 +155,11 @@ module "eks" {
     }
 
   }
-  
+
   manage_aws_auth_configmap = true
   aws_auth_roles = flatten([
-      module.eks_blueprints_admin_team.aws_auth_configmap_role
-    ])
+    module.eks_blueprints_admin_team.aws_auth_configmap_role
+  ])
   # aws_auth_roles = flatten([
   #   module.eks_blueprints_admin_team.aws_auth_configmap_role,
   #   [
@@ -189,13 +193,13 @@ module "vpc" {
   name = var.cluster_name
   cidr = var.cluster_cidr
 
-  azs                     = local.azs
-  private_subnets         = concat([for k, v in local.azs : cidrsubnet(var.cluster_cidr, 6, k)], 
-                                   [for k, v in local.azs : cidrsubnet(var.cluster_cidr, 8, k + 8)],
-                                   [for k, v in local.azs : cidrsubnet(var.cluster_cidr, 8, k + 16)],
-                                   [for k, v in local.azs : cidrsubnet(var.cluster_cidr, 8, k + 24)],
-                                   [for k, v in local.azs : cidrsubnet(var.cluster_cidr, 8, k + 32)]
-                            )
+  azs = local.azs
+  private_subnets = concat([for k, v in local.azs : cidrsubnet(var.cluster_cidr, 6, k)],
+    [for k, v in local.azs : cidrsubnet(var.cluster_cidr, 8, k + 8)],
+    [for k, v in local.azs : cidrsubnet(var.cluster_cidr, 8, k + 16)],
+    [for k, v in local.azs : cidrsubnet(var.cluster_cidr, 8, k + 24)],
+    [for k, v in local.azs : cidrsubnet(var.cluster_cidr, 8, k + 32)]
+  )
   public_subnets          = [for k, v in local.azs : cidrsubnet(var.cluster_cidr, 8, k + 56)]
   map_public_ip_on_launch = true
 
@@ -212,14 +216,14 @@ module "vpc" {
 
   public_subnet_tags = {
     "kubernetes.io/cluster/${var.cluster_name}" = "shared"
-    "kubernetes.io/role/elb"              = 1
+    "kubernetes.io/role/elb"                    = 1
     # "karpenter.sh/discovery"              = var.cluster_name
   }
 
   private_subnet_tags = {
     "kubernetes.io/cluster/${var.cluster_name}" = "shared"
-    "kubernetes.io/role/internal-elb" = 1
-    "karpenter.sh/discovery"              = var.cluster_name
+    "kubernetes.io/role/internal-elb"           = 1
+    "karpenter.sh/discovery"                    = var.cluster_name
   }
 
   tags = local.tags
