@@ -19,7 +19,8 @@ variable "cluster_2_cidr" {
   default = "10.2.0.0/16"
 }
 variable "cluster_2_name" {
-  type = string
+  type    = string
+  default = ""
 }
 variable "cluster_2_region" {
   type    = string
