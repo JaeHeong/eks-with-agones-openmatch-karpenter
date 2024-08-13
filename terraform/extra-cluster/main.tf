@@ -11,6 +11,14 @@ provider "aws" {
 #   region = var.cluster_2_region
 # }
 
+terraform {
+  backend "s3" {
+    bucket = "deadly-trick-tfstate"
+    key    = "extra-cluster/terraform.tfstate"
+    region = "ap-northeast-2"
+  }
+}
+
 data "aws_caller_identity" "current" {}
 
 ## ECR

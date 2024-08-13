@@ -1,4 +1,3 @@
-
 ## Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
 ## SPDX-License-Identifier: MIT-0
 variable "multi_cluster" {
@@ -7,7 +6,7 @@ variable "multi_cluster" {
 }
 
 variable "ecr_region" {
-  type    = string
+  type = string
   # default = "us-east-1"
 }
 
@@ -23,11 +22,11 @@ variable "cluster_1_cidr" {
 # }
 
 variable "cluster_1_name" {
-  type    = string
+  type = string
 }
 
 variable "cluster_1_region" {
-  type    = string
+  type = string
   # default = "us-east-1"
 }
 variable "cluster_1_endpoint" {

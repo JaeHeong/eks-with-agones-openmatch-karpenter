@@ -8,7 +8,7 @@ variable "cluster_1_cidr" {
   default = "10.1.0.0/16"
 }
 variable "cluster_1_name" {
-  type    = string
+  type = string
 }
 variable "cluster_1_region" {
   type    = string
@@ -19,7 +19,7 @@ variable "cluster_2_cidr" {
   default = "10.2.0.0/16"
 }
 variable "cluster_2_name" {
-  type    = string
+  type = string
 }
 variable "cluster_2_region" {
   type    = string

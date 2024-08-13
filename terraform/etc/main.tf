@@ -2,6 +2,14 @@ provider "aws" {
   region = var.region
 }
 
+terraform {
+  backend "s3" {
+    bucket = "deadly-trick-tfstate"
+    key    = "etc/terraform.tfstate"
+    region = "ap-northeast-2"
+  }
+}
+
 data "aws_caller_identity" "current" {}
 
 resource "aws_dynamodb_table" "server_list" {

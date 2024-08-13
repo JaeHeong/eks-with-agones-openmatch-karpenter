@@ -40,7 +40,7 @@ func main() {
 	flag.StringVar(&caFile, "caFile", "ca.crt", "CA File")
 	flag.BoolVar(&multicluster, "multicluster", false, "Multi-Cluster allocation")
 	flag.StringVar(&namespace, "namespace", "default", "Game servers namespace")
-	flag.StringVar(&regions, "regions", "us-east-1,us-east-2", "List of regions, separated by ','")
+	flag.StringVar(&regions, "regions", "ap-northeast-2,us-east-1,us-east-2", "List of regions, separated by ','")
 	flag.IntVar(&interval, "interval", 5, "Polling interval, in seconds")
 
 	flag.Usage = func() {

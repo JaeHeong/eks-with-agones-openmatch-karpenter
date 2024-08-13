@@ -1,5 +1,13 @@
 ## Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
 ## SPDX-License-Identifier: MIT-0
+terraform {
+  backend "s3" {
+    bucket = "deadly-trick-tfstate"
+    key    = "cluster/terraform.tfstate"
+    region = "ap-northeast-2"
+  }
+}
+
 module "cluster1" {
   source         = "./modules/cluster"
   cluster_name   = var.cluster_1_name
@@ -21,8 +29,8 @@ module "cluster1" {
 # Adding guidance solution ID via AWS CloudFormation resource
 #--------------------------------------------------------------
 resource "aws_cloudformation_stack" "guidance_deployment_metrics" {
-    name = "tracking-stack"
-    template_body = <<STACK
+  name          = "tracking-stack"
+  template_body = <<STACK
     {
         "AWSTemplateFormatVersion": "2010-09-09",
         "Description": "AWS Guidance ID (SO9387)",

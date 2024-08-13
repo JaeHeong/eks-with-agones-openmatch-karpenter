@@ -11,6 +11,14 @@ provider "aws" {
   alias  = "my_region"
 }
 
+terraform {
+  backend "s3" {
+    bucket = "deadly-trick-tfstate"
+    key    = "intra-cluster/terraform.tfstate"
+    region = "ap-northeast-2"
+  }
+}
+
 data "kubernetes_config_map_v1" "aws_auth" {
   metadata {
     name      = "aws-auth"
@@ -28,7 +36,7 @@ locals {
 
   # When delete use this
   existing_map_roles = try(yamldecode(data.kubernetes_config_map_v1.aws_auth.data.mapRoles), [])
-  
+
   eks_aws_roles = [
     {
       rolearn  = module.eks_blueprints_addons.karpenter.node_iam_role_arn
@@ -41,9 +49,9 @@ locals {
   ]
 
   merged_map_roles = concat(local.existing_map_roles, local.eks_aws_roles)
-  
+
   aws_auth_data = {
-    mapRoles    = yamlencode(local.merged_map_roles)
+    mapRoles = yamlencode(local.merged_map_roles)
   }
 }
 
@@ -53,7 +61,7 @@ resource "kubernetes_config_map_v1_data" "aws_auth" {
     namespace = "kube-system"
   }
 
-  data = local.aws_auth_data
+  data  = local.aws_auth_data
   force = true
 }
 
@@ -140,8 +148,8 @@ module "eks_blueprints_addons" {
       most_recent = true
     }
   }
-  
-  enable_karpenter                    = true
+
+  enable_karpenter = true
   karpenter = {
     repository_username = data.aws_ecrpublic_authorization_token.token.user_name
     repository_password = data.aws_ecrpublic_authorization_token.token.password
