@@ -5,7 +5,9 @@ GOOS=linux GOARCH=arm64 go build -tags lambda.norpc -o bootstrap main.go
 
 ## Copy your auth files
 ```
-cp ../clients/ncat/p* .
+kubectl get secret open-match-tls-server -n open-match -o jsonpath="{.data.public\.cert}" | base64 -d > public.cert
+kubectl get secret open-match-tls-server -n open-match -o jsonpath="{.data.private\.key}" | base64 -d > private.key
+kubectl get secret open-match-tls-rootca -n open-match -o jsonpath="{.data.public\.cert}" | base64 -d > publicCA.cert
 ```
 
 ## Zip your files to upload to AWS lambda
